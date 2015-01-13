@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="9"/>
+    <BuildModes Active="Default"/>
+    <Units Count="19">
+      <Unit0>
+        <Filename Value="TextSuiteTest.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="45" Y="17"/>
+        <UsageCount Value="60"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="uMainForm.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="MainForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="uMainForm"/>
+        <TopLine Value="79"/>
+        <CursorPos Y="97"/>
+        <UsageCount Value="60"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsTextSuite"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="1988"/>
+        <CursorPos X="22" Y="2002"/>
+        <UsageCount Value="59"/>
+        <Loaded Value="True"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="old\TextSuite.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="TextSuite"/>
+        <EditorIndex Value="1"/>
+        <WindowIndex Value="1"/>
+        <TopLine Value="207"/>
+        <CursorPos X="3" Y="223"/>
+        <ExtraEditorCount Value="1"/>
+        <ExtraEditor1>
+          <EditorIndex Value="-1"/>
+          <TopLine Value="232"/>
+          <CursorPos X="3" Y="302"/>
+        </ExtraEditor1>
+        <UsageCount Value="54"/>
+        <Loaded Value="True"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="old\TextSuiteImports.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="662"/>
+        <CursorPos X="3" Y="664"/>
+        <UsageCount Value="54"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="old\TextSuiteWideUtils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="TextSuiteWideUtils"/>
+        <EditorIndex Value="2"/>
+        <WindowIndex Value="1"/>
+        <TopLine Value="1243"/>
+        <CursorPos X="18" Y="1257"/>
+        <UsageCount Value="54"/>
+        <Loaded Value="True"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="old\TextSuiteClasses.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="TextSuiteClasses"/>
+        <IsVisibleTab Value="True"/>
+        <WindowIndex Value="1"/>
+        <TopLine Value="4487"/>
+        <CursorPos X="28" Y="4439"/>
+        <UsageCount Value="54"/>
+        <Loaded Value="True"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="old\TextSuitePostProcess.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="1"/>
+        <TopLine Value="163"/>
+        <CursorPos X="61" Y="141"/>
+        <UsageCount Value="54"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="old\TextSuiteTTFUtils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
+        <TopLine Value="-1"/>
+        <CursorPos X="-1" Y="-1"/>
+        <UsageCount Value="54"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="old\TextSuiteVersion.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
+        <TopLine Value="-1"/>
+        <CursorPos X="-1" Y="-1"/>
+        <UsageCount Value="54"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="..\bitSpace\_projects\MassiveUniverseOnline\bitSpaceEngine\src\OpenGLCore\uglcTypes.pas"/>
+        <UnitName Value="uglcTypes"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="264"/>
+        <CursorPos X="3" Y="273"/>
+        <UsageCount Value="30"/>
+        <Loaded Value="True"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="..\bitSpace\_projects\MassiveUniverseOnline\bitSpaceEngine\src\OpenGLCore\dglOpenGL.pas"/>
+        <UnitName Value="dglOpenGL"/>
+        <EditorIndex Value="5"/>
+        <TopLine Value="11398"/>
+        <CursorPos X="3" Y="11232"/>
+        <UsageCount Value="30"/>
+        <Loaded Value="True"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="new\uglctextsuite.pas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="3" Y="13"/>
+        <UsageCount Value="15"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\inc\ustringh.inc"/>
+        <EditorIndex Value="4"/>
+        <TopLine Value="110"/>
+        <CursorPos X="10" Y="126"/>
+        <UsageCount Value="28"/>
+        <Loaded Value="True"/>
+      </Unit13>
+      <Unit14>
+        <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\inc\ustrings.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1819"/>
+        <CursorPos X="37" Y="2066"/>
+        <UsageCount Value="6"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\inc\systemh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="756"/>
+        <CursorPos X="32" Y="774"/>
+        <UsageCount Value="27"/>
+      </Unit15>
+      <Unit16>
+        <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\inc\heaph.inc"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="69"/>
+        <CursorPos X="10" Y="94"/>
+        <UsageCount Value="27"/>
+        <Loaded Value="True"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="old\TextSuiteCPUUtils.pas"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="1"/>
+        <CursorPos X="23" Y="20"/>
+        <UsageCount Value="18"/>
+      </Unit17>
+      <Unit18>
+        <Filename Value="..\glBitmap\glBitmap\glBitmap.pas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="14" Y="14"/>
+        <UsageCount Value="6"/>
+      </Unit18>
+    </Units>
+    <JumpHistory Count="30" HistoryIndex="29">
+      <Position1>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="1979" TopLine="1967"/>
+      </Position1>
+      <Position2>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="1980" TopLine="1967"/>
+      </Position2>
+      <Position3>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="1981" TopLine="1967"/>
+      </Position3>
+      <Position4>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="1982" TopLine="1967"/>
+      </Position4>
+      <Position5>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="1983" TopLine="1967"/>
+      </Position5>
+      <Position6>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="1984" TopLine="1967"/>
+      </Position6>
+      <Position7>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="1987" TopLine="1967"/>
+      </Position7>
+      <Position8>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="2032" TopLine="2015"/>
+      </Position8>
+      <Position9>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="2037" TopLine="2015"/>
+      </Position9>
+      <Position10>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="1970" TopLine="1954"/>
+      </Position10>
+      <Position11>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="1973" TopLine="1954"/>
+      </Position11>
+      <Position12>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="1974" TopLine="1954"/>
+      </Position12>
+      <Position13>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="1975" TopLine="1967"/>
+      </Position13>
+      <Position14>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="1977" TopLine="1967"/>
+      </Position14>
+      <Position15>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="1991" TopLine="1967"/>
+      </Position15>
+      <Position16>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="1995" TopLine="2008"/>
+      </Position16>
+      <Position17>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="1997" TopLine="1982"/>
+      </Position17>
+      <Position18>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="2008" TopLine="1982"/>
+      </Position18>
+      <Position19>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="2054" TopLine="2037"/>
+      </Position19>
+      <Position20>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="2032" TopLine="2016"/>
+      </Position20>
+      <Position21>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="2037" Column="36" TopLine="2013"/>
+      </Position21>
+      <Position22>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="2011" TopLine="1995"/>
+      </Position22>
+      <Position23>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="2032" TopLine="2016"/>
+      </Position23>
+      <Position24>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="1991" Column="51" TopLine="2005"/>
+      </Position24>
+      <Position25>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="2011" TopLine="2006"/>
+      </Position25>
+      <Position26>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="2034" TopLine="2012"/>
+      </Position26>
+      <Position27>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="2035" TopLine="2012"/>
+      </Position27>
+      <Position28>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="2051" TopLine="2035"/>
+      </Position28>
+      <Position29>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="1993" Column="28" TopLine="1991"/>
+      </Position29>
+      <Position30>
+        <Filename Value="new\utsTextSuite.pas"/>
+        <Caret Line="2011" TopLine="1990"/>
+      </Position30>
+    </JumpHistory>
+  </ProjectSession>
+  <Debugging>
+    <BreakPoints Count="4">
+      <Item1>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="new\utsTextSuite.pas"/>
+        <Line Value="2011"/>
+      </Item1>
+      <Item2>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="new\utsTextSuite.pas"/>
+        <Line Value="2058"/>
+      </Item2>
+      <Item3>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="new\utsTextSuite.pas"/>
+        <Line Value="2037"/>
+      </Item3>
+      <Item4>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="new\utsTextSuite.pas"/>
+        <Line Value="1991"/>
+      </Item4>
+    </BreakPoints>
+    <Watches Count="4">
+      <Item1>
+        <Expression Value="Text"/>
+      </Item1>
+      <Item2>
+        <Expression Value="p^.Text"/>
+      </Item2>
+      <Item3>
+        <Expression Value="TextBegin"/>
+      </Item3>
+      <Item4>
+        <Expression Value="aText"/>
+      </Item4>
+    </Watches>
+  </Debugging>
+</CONFIG>

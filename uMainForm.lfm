@@ -1,0 +1,14 @@
+object MainForm: TMainForm
+  Left = 536
+  Height = 508
+  Top = 255
+  Width = 682
+  OnCreate = FormCreate
+  OnPaint = FormPaint
+  LCLVersion = '1.3'
+  object ApplicationProperties: TApplicationProperties
+    OnIdle = ApplicationPropertiesIdle
+    left = 56
+    top = 24
+  end
+end
