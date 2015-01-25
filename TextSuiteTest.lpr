@@ -7,8 +7,9 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, uMainForm, TextSuite, TextSuiteClasses, TextSuiteImports, TextSuitePostProcess,
-  TextSuiteTTFUtils, TextSuiteVersion, TextSuiteWideUtils, utsTextSuite;
+  Forms, uMainForm, TextSuite, TextSuiteClasses, TextSuiteImports, TextSuitePostProcess, TextSuiteTTFUtils,
+  TextSuiteVersion, TextSuiteWideUtils, utsTextSuite, utsFontCreatorGDI, utsTtfUtils, utsTypes, utsUtils, 
+utsRendererOpenGL;
 
 {$R *.res}
 

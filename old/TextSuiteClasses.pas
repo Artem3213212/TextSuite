@@ -3082,7 +3082,7 @@ begin
 
   // name
   fFontname := Fontname;
-  for Idx := 1 to Min(Length(Fontname), Length(LogFont.lfFaceName)) do
+  for Idx := 1 to min(Length(Fontname), Length(LogFont.lfFaceName)) do
     LogFont.lfFaceName[Idx -1] := Fontname[Idx];
 
   // char set
