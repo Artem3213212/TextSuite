@@ -33,7 +33,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="15">
+    <Units Count="8">
       <Unit0>
         <Filename Value="TextSuiteTest.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -47,65 +47,29 @@
         <UnitName Value="uMainForm"/>
       </Unit1>
       <Unit2>
-        <Filename Value="new\utsTextSuite.pas"/>
+        <Filename Value="..\..\utsRendererOpenGL.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="utsTextSuite"/>
       </Unit2>
       <Unit3>
-        <Filename Value="old\TextSuite.pas"/>
+        <Filename Value="..\..\utsTextSuite.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="TextSuite"/>
       </Unit3>
       <Unit4>
-        <Filename Value="old\TextSuiteImports.pas"/>
+        <Filename Value="..\..\utsTtfUtils.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="TextSuiteImports"/>
       </Unit4>
       <Unit5>
-        <Filename Value="old\TextSuiteWideUtils.pas"/>
+        <Filename Value="..\..\utsTypes.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="TextSuiteWideUtils"/>
       </Unit5>
       <Unit6>
-        <Filename Value="old\TextSuiteClasses.pas"/>
+        <Filename Value="..\..\utsUtils.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="TextSuiteClasses"/>
       </Unit6>
       <Unit7>
-        <Filename Value="old\TextSuitePostProcess.pas"/>
+        <Filename Value="..\..\utsFontCreatorGDI.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit7>
-      <Unit8>
-        <Filename Value="old\TextSuiteTTFUtils.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="TextSuiteTTFUtils"/>
-      </Unit8>
-      <Unit9>
-        <Filename Value="old\TextSuiteVersion.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit9>
-      <Unit10>
-        <Filename Value="new\utsFontCreatorGDI.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="utsFontCreatorGDI"/>
-      </Unit10>
-      <Unit11>
-        <Filename Value="new\utsTtfUtils.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit11>
-      <Unit12>
-        <Filename Value="new\utsTypes.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit12>
-      <Unit13>
-        <Filename Value="new\utsUtils.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit13>
-      <Unit14>
-        <Filename Value="new\utsRendererOpenGL.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="utsRendererOpenGL"/>
-      </Unit14>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -116,7 +80,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);old"/>
-      <OtherUnitFiles Value="old;new;..\bitSpace\_projects\MassiveUniverseOnline\bitSpaceEngine\src\OpenGLCore"/>
+      <OtherUnitFiles Value="..\..;..\..\old;..\..\OpenGLCore"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>

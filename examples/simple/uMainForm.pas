@@ -2,7 +2,7 @@ unit uMainForm;
 
 {$mode objfpc}{$H+}
 
-{.$DEFINE USE_OLD_TS}
+{$DEFINE USE_OLD_TS}
 
 interface
 
@@ -21,11 +21,10 @@ type
     fFrameTime: QWord;
     fFrameCount: Integer;
     fSecTime: QWord;
-
     fContext: TglcContext;
     {$IFDEF USE_OLD_TS}
-    fTextSuiteContext: tsContextID;
-    fFontID: tsFontID;
+    ftsContext: tsContextID;
+    ftsFont: tsFontID;
     {$ELSE}
     ftsContext:   TtsContext;
     ftsRenderer:  TtsRendererOpenGL;
@@ -59,12 +58,12 @@ begin
   fContext.BuildContext;
   {$IFDEF USE_OLD_TS}
   tsInit(TS_INIT_TEXTSUITE or TS_INIT_OPENGL or TS_INIT_GDI);
-  tsContextCreate(@fTextSuiteContext);
+  tsContextCreate(@ftsContext);
   tsSetParameteri(TS_RENDERER, TS_RENDERER_OPENGL);
   tsSetParameteri(TS_CREATOR, TS_CREATOR_GDI_FACENAME);
-  tsContextBind(fTextSuiteContext);
-  tsFontCreateCreatorA('Calibri', 25, 0, TS_ANTIALIASING_NORMAL, TS_DEFAULT, @fFontID);
-  tsFontBind(fFontID);
+  tsContextBind(ftsContext);
+  tsFontCreateCreatorA('Calibri', 25, 0, TS_ANTIALIASING_NORMAL, TS_DEFAULT, @ftsFont);
+  tsFontBind(ftsFont);
   {$ELSE}
   ftsContext   := TtsContext.Create;
   ftsRenderer  := TtsRendererOpenGL.Create(ftsContext, tsFormatRGBA8);
@@ -76,7 +75,10 @@ end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
-  {$IFNDEF USE_OLD_TS}
+  {$IFDEF USE_OLD_TS}
+  tsFontDestroy(ftsFont);
+  tsContextDestroy(ftsContext);
+  {$ELSE}
   FreeAndNil(ftsFont);
   FreeAndNil(ftsGenerator);
   FreeAndNil(ftsRenderer);
