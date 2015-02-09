@@ -8,10 +8,9 @@
       <Unit0>
         <Filename Value="TextSuiteTest.lpr"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <CursorPos X="38" Y="20"/>
-        <UsageCount Value="92"/>
+        <CursorPos X="29" Y="20"/>
+        <UsageCount Value="93"/>
         <Loaded Value="True"/>
       </Unit0>
       <Unit1>
@@ -23,45 +22,58 @@
         <UnitName Value="uMainForm"/>
         <TopLine Value="52"/>
         <CursorPos X="37" Y="73"/>
-        <UsageCount Value="92"/>
+        <UsageCount Value="93"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
       <Unit2>
         <Filename Value="..\..\utsRendererOpenGL.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <UsageCount Value="20"/>
+        <UnitName Value="utsRendererOpenGL"/>
+        <EditorIndex Value="4"/>
+        <TopLine Value="16"/>
+        <CursorPos X="3" Y="54"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
       </Unit2>
       <Unit3>
         <Filename Value="..\..\utsTextSuite.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <UsageCount Value="20"/>
+        <UnitName Value="utsTextSuite"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="108"/>
+        <CursorPos X="40" Y="188"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
       </Unit3>
       <Unit4>
         <Filename Value="..\..\utsTtfUtils.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit4>
       <Unit5>
         <Filename Value="..\..\utsTypes.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit5>
       <Unit6>
         <Filename Value="..\..\utsUtils.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
       </Unit6>
       <Unit7>
         <Filename Value="..\..\utsFontCreatorGDI.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <UsageCount Value="20"/>
+        <UnitName Value="utsFontCreatorGDI"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="85"/>
+        <CursorPos X="22" Y="79"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
       </Unit7>
       <Unit8>
         <Filename Value="new\utsTextSuite.pas"/>
@@ -364,7 +376,10 @@
         <UsageCount Value="10"/>
       </Unit47>
     </Units>
-    <JumpHistory Count="8" HistoryIndex="7">
+    <General>
+      <ActiveWindowIndexAtStart Value="1"/>
+    </General>
+    <JumpHistory Count="9" HistoryIndex="8">
       <Position1>
         <Filename Value="uMainForm.pas"/>
         <Caret Line="5" Column="2"/>
@@ -397,6 +412,10 @@
         <Filename Value="TextSuiteTest.lpr"/>
         <Caret Line="17" Column="34"/>
       </Position8>
+      <Position9>
+        <Filename Value="TextSuiteTest.lpr"/>
+        <Caret Line="20" Column="29"/>
+      </Position9>
     </JumpHistory>
   </ProjectSession>
   <Debugging>
