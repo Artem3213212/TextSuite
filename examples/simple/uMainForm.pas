@@ -2,7 +2,7 @@ unit uMainForm;
 
 {$mode objfpc}{$H+}
 
-{$DEFINE USE_OLD_TS}
+{.$DEFINE USE_OLD_TS}
 
 interface
 
@@ -29,7 +29,8 @@ type
     ftsContext:   TtsContext;
     ftsRenderer:  TtsRendererOpenGL;
     ftsGenerator: TtsFontGeneratorGDI;
-    ftsFont:      TtsFont;
+    ftsFont1:     TtsFont;
+    ftsFont2:     TtsFont;
     {$ENDIF}
     procedure Render;
   public
@@ -47,7 +48,7 @@ uses
   dglOpenGL;
 
 const
-  TEST_STRING = 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.';
+  TEST_STRING = 'orem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.';
 
 procedure TMainForm.FormCreate(Sender: TObject);
 var
@@ -66,10 +67,10 @@ begin
   tsFontBind(ftsFont);
   {$ELSE}
   ftsContext   := TtsContext.Create;
-  ftsRenderer  := TtsRendererOpenGL.Create(ftsContext, tsFormatRGBA8);
-  ftsGenerator := TtsFontGeneratorGDI.Create;
-  ftsFont      := ftsGenerator.GetFontByName('Calibri', ftsRenderer, 25, [], tsAANormal);
-  ftsFont.LineSpacing := 0;
+  ftsRenderer  := TtsRendererOpenGL.Create(ftsContext, tsFormatAlpha8);
+  ftsGenerator := TtsFontGeneratorGDI.Create(ftsContext);
+  ftsFont1     := ftsGenerator.GetFontByName('Calibri', ftsRenderer, 25, [tsStyleBold, tsStyleItalic], tsAANormal);
+  ftsFont2     := ftsGenerator.GetFontByName('Calibri', ftsRenderer, 20, [], tsAANormal);
   {$ENDIF}
 end;
 
@@ -79,7 +80,8 @@ begin
   tsFontDestroy(ftsFont);
   tsContextDestroy(ftsContext);
   {$ELSE}
-  FreeAndNil(ftsFont);
+  FreeAndNil(ftsFont1);
+  FreeAndNil(ftsFont2);
   FreeAndNil(ftsGenerator);
   FreeAndNil(ftsRenderer);
   FreeAndNil(ftsContext);
@@ -128,9 +130,24 @@ begin
   tsTextOutA(TEST_STRING);
   tsTextEndBlock;
   {$ELSE}
-  block := ftsRenderer.BeginBlock(0, 0, ClientWidth, ClientHeight, [tsBlockFlagWordWrap]);
+  block := ftsRenderer.BeginBlock(10, 10, ClientWidth-20, ClientHeight-20, [tsBlockFlagWordWrap]);
   try
-    block.ChangeFont(ftsFont);
+    block.HorzAlign := tsHorzAlignJustify;
+
+    block.ChangeFont(ftsFont1);
+    block.ChangeColor(tsColor4f(1.0, 0.0, 0.0, 1.0));
+    block.TextOutW('L');
+
+    block.ChangeFont(ftsFont2);
+    block.ChangeColor(tsColor4f(1.0, 1.0, 1.0, 1.0));
+    block.TextOutW(TEST_STRING + sLineBreak);
+
+    block.ChangeFont(ftsFont1);
+    block.ChangeColor(tsColor4f(0.0, 1.0, 0.0, 1.0));
+    block.TextOutW('L');
+
+    block.ChangeFont(ftsFont2);
+    block.ChangeColor(tsColor4f(1.0, 1.0, 1.0, 1.0));
     block.TextOutW(TEST_STRING);
   finally
     ftsRenderer.EndBlock(block);

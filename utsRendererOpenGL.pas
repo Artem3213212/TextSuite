@@ -274,6 +274,7 @@ var
     result.VertexSize.y := aCharImage.Height;
 
     glBindTexture(GL_TEXTURE_2D, result.TextureID);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     glTexSubImage2D(GL_TEXTURE_2D, 0,
       x, y, aCharImage.Width, aCharImage.Height,
       FORMAT_TYPES[aCharImage.Format].Format,

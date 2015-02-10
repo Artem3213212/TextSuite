@@ -92,7 +92,7 @@ type
     function GetFontByFile(const aFilename: String; const aRenderer: TtsRenderer; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload;
     function GetFontByStream(const aStream: TStream;  const aRenderer: TtsRenderer; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload;
 
-    constructor Create;
+    constructor Create(const aContext: TtsContext);
     destructor Destroy; override;
   end;
 
@@ -555,9 +555,9 @@ var
     for i := 1 to cnt do begin
       c := tsColor4f(1, 1, 1, 1);
       if ((pSrc^ and $80) > 0) then
-        c.a := 1
+        c.a := 1.0
       else
-        c.a := 0;
+        c.a := 0.0;
       pSrc^ := (pSrc^ and not $80) shl 1;
       tsFormatMap(aFont.Renderer.Format, pDst, c);
     end;
@@ -594,6 +594,7 @@ begin
     for y := 0 to h-1 do begin
       pDst := aImage.Scanline[y];
       srcX := srcW;
+      x    := w;
       while (srcX > 0) do
         ExpandByte;
     end;
@@ -623,7 +624,7 @@ var
       inc(pSrc, 1);
     end;
     dec(x, cnt);
-    c := tsColor4f(1, 1, 1, tmp / ($40 * Cardinal(aFont.fMat2.eM11.value)));
+    c := tsColor4f(1, 1, 1, tmp / $40);
     tsFormatMap(aFont.Renderer.Format, pDst, c);
   end;
 
@@ -878,9 +879,9 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-constructor TtsFontGeneratorGDI.Create;
+constructor TtsFontGeneratorGDI.Create(const aContext: TtsContext);
 begin
-  inherited Create;
+  inherited Create(aContext);
   gdiCritSec.Enter;
   try
     inc(gdiRefCount, 1);
@@ -894,6 +895,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 destructor TtsFontGeneratorGDI.Destroy;
 begin
+  inherited Destroy; // first free all fonts (managed by parent class)
   gdiCritSec.Enter;
   try
     dec(gdiRefCount, 1);
@@ -902,7 +904,6 @@ begin
   finally
     gdiCritSec.Leave;
   end;
-  inherited Destroy;
 end;
 
 initialization

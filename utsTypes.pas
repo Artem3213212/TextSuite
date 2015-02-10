@@ -168,8 +168,6 @@ type
     LineSpacing: Integer;
   end;
 
-  TtsAnsiToWideCharFunc = procedure(aDst: PWideChar; const aSize: Integer; aSource: PAnsiChar; const aCodePage: TtsCodePage; const aDefaultChar: WideChar);
-
 function tsColor4f(r, g, b, a: Single): TtsColor4f;
 function tsRect(const l, t, r, b: Integer): TtsRect;
 function tsPosition(const x, y: Integer): TtsPosition;
@@ -237,8 +235,6 @@ begin
 
     tsFormatLumAlpha8: begin
       s := 0.30 * aColor.r + 0.59 * aColor.g + 0.11 * aColor.b;
-      aData^ := Trunc($FF * s);         inc(aData);
-      aData^ := Trunc($FF * s);         inc(aData);
       aData^ := Trunc($FF * s);         inc(aData);
       aData^ := Trunc($FF * aColor.a);  inc(aData);
     end;

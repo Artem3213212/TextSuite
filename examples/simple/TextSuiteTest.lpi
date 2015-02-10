@@ -33,7 +33,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="8">
+    <Units Count="9">
       <Unit0>
         <Filename Value="TextSuiteTest.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -49,10 +49,12 @@
       <Unit2>
         <Filename Value="..\..\utsRendererOpenGL.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="utsRendererOpenGL"/>
       </Unit2>
       <Unit3>
         <Filename Value="..\..\utsTextSuite.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="utsTextSuite"/>
       </Unit3>
       <Unit4>
         <Filename Value="..\..\utsTtfUtils.pas"/>
@@ -61,15 +63,23 @@
       <Unit5>
         <Filename Value="..\..\utsTypes.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="utsTypes"/>
       </Unit5>
       <Unit6>
         <Filename Value="..\..\utsUtils.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="utsUtils"/>
       </Unit6>
       <Unit7>
         <Filename Value="..\..\utsFontCreatorGDI.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="utsFontCreatorGDI"/>
       </Unit7>
+      <Unit8>
+        <Filename Value="..\..\utsCodePages.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsCodePages"/>
+      </Unit8>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -102,7 +102,7 @@ type
   TtsFont = class(TObject)
   private
     fRenderer: TtsRenderer;
-    fCreator: TtsFontGenerator;
+    fGenerator: TtsFontGenerator;
     fProperties: TtsFontProperties;
 
     fCharSpacing: Integer;
@@ -117,12 +117,13 @@ type
     function GetCharCreate(const aCharCode: WideChar): TtsChar;
     procedure AddChar(const aCharCode: WideChar; const aChar: TtsChar); overload;
   protected
-    constructor Create(const aRenderer: TtsRenderer; const aCreator: TtsFontGenerator; const aProperties: TtsFontProperties);
+    constructor Create(const aRenderer: TtsRenderer; const aGenerator: TtsFontGenerator; const aProperties: TtsFontProperties);
   public
     property CreateChars: Boolean read fCreateChars write fCreateChars;
     property Char[const aCharCode: WideChar]: TtsChar read GetChar;
 
     property Renderer:   TtsRenderer       read fRenderer;
+    property Generator:  TtsFontGenerator  read fGenerator;
     property Properties: TtsFontProperties read fProperties;
 
     property CharSpacing: Integer read fCharSpacing write fCharSpacing;
@@ -135,6 +136,7 @@ type
     procedure ClearChars;
 
     function GetTextWidthW(aText: PWideChar): Integer;
+    function GetTextWidthA(aText: PAnsiChar): Integer;
     procedure GetTextMetric(out aMetric: TtsTextMetric);
 
     destructor Destroy; override;
@@ -174,6 +176,8 @@ type
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   TtsFontGenerator = class(TObject)
   private
+    fContext: TtsContext;
+    fFonts: TObjectList;
     fPostProcessSteps: TObjectList;
 
     function GetPostProcessStepCount: Integer;
@@ -182,9 +186,13 @@ type
     procedure DrawLine(const aChar: TtsChar; const aCharImage: TtsImage; aLinePosition, aLineSize: Integer);
     procedure DoPostProcess(const aChar: TtsChar; const aCharImage: TtsImage);
   protected
+    procedure RegisterFont(const aFont: TtsFont);
+    procedure UnregisterFont(const aFont: TtsFont);
+
     function GetGlyphMetrics(const aFont: TtsFont; const aCharCode: WideChar; out aGlyphOrigin, aGlyphSize: TtsPosition; out aAdvance: Integer): Boolean; virtual; abstract;
     procedure GetCharImage(const aFont: TtsFont; const aCharCode: WideChar; const aCharImage: TtsImage); virtual; abstract;
   public
+    property Context: TtsContext read fContext;
     property PostProcessStepCount: Integer read GetPostProcessStepCount;
     property PostProcessStep[const aIndex: Integer]: TtsPostProcessStep read GetPostProcessStep;
 
@@ -195,7 +203,7 @@ type
     procedure DeletePostProcessStep(const aIndex: Integer);
     procedure ClearPostProcessSteps;
 
-    constructor Create;
+    constructor Create(const aContext: TtsContext);
     destructor Destroy; override;
   end;
 
@@ -233,7 +241,8 @@ type
 
   TtsLineFlag = (
     tsLastItemIsSpace,  // is set if the last item was a space item
-    tsMetaValid         // is set if the line meta data is valid
+    tsMetaValid,        // is set if the line meta data is valid
+    tsAutoLineBreak     // is set if the linebreak was set automatically
   );
   TtsLineFlags = set of TtsLineFlag;
   PtsBlockLine = ^TtsBlockLine;
@@ -333,6 +342,10 @@ type
     fFormat: TtsFormat;
     fSaveImages: Boolean;
     fRenderCS: TCriticalSection;
+    fBlocks: TObjectList;
+
+    procedure RegisterBlock(const aBlock: TtsTextBlock);
+    procedure UnregisterBlock(const aBlock: TtsTextBlock);
   protected
     function  CreateRenderRef(const aChar: TtsChar; const aCharImage: TtsImage): TtsCharRenderRef; virtual; abstract;
     procedure FreeRenderRef(const aCharRef: TtsCharRenderRef); virtual; abstract;
@@ -360,13 +373,20 @@ type
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   TtsContext = class(TObject)
   private
-    fID: Cardinal;
-
     fCodePage: TtsCodePage;
-    fCodePagePtr: Pointer;
-    fCodePageFunc: TtsAnsiToWideCharFunc;
     fCodePageDefault: WideChar;
+
+    fRenderers: TObjectList;
+    fGenerators: TObjectList;
+  private
+    procedure RegisterRenderer(const aRenderer: TtsRenderer);
+    procedure UnregisterRenderer(const aRenderer: TtsRenderer);
+    procedure RegisterGenerator(const aGenerator: TtsFontGenerator);
+    procedure UnregisterGenerator(const aGenerator: TtsFontGenerator);
   public
+    property CodePage:        TtsCodePage read fCodePage        write fCodePage;
+    property CodePageDefault: WideChar    read fCodePageDefault write fCodePageDefault;
+
     function AnsiToWide(const aText: PAnsiChar): PWideChar;
 
     constructor Create;
@@ -388,9 +408,6 @@ const
   COLOR_CHANNELS_RGBA: TtsColorChannels = [tsChannelRed, tsChannelGreen, tsChannelBlue, tsChannelAlpha];
 
 implementation
-
-var
-  gLastContextID: Cardinal = 0;
 
 const
   IMAGE_MODE_FUNCTIONS: array[TtsImageMode] of TtsImageModeFunc = (
@@ -493,6 +510,7 @@ var
   tmp: PByte;
 begin
   LineSize := fWidth * tsFormatSize(fFormat);
+  LineSize := LineSize + ((4 - (LineSize mod 4)) mod 4);
   SetLength(fScanlines, fHeight);
   for i := 0 to fHeight-1 do begin
     tmp := fData;
@@ -519,9 +537,11 @@ end;
 procedure TtsImage.Assign(const aImage: TtsImage);
 var
   ImgData: Pointer;
-  ImgSize: Integer;
+  ImgSize, LineSize: Integer;
 begin
-  ImgSize := aImage.Width * aImage.Height * tsFormatSize(aImage.Format);
+  LineSize := aImage.Width * tsFormatSize(aImage.Format);
+  LineSize := LineSize + ((4 - (LineSize mod 4)) mod 4);
+  ImgSize := LineSize * aImage.Height;
   GetMem(ImgData, ImgSize);
   if Assigned(ImgData) then
     Move(aImage.Data, ImgData, ImgSize);
@@ -532,8 +552,11 @@ end;
 procedure TtsImage.CreateEmpty(const aFormat: TtsFormat; const aWidth, aHeight: Integer);
 var
   ImgData: PByte;
+  LineSize: Integer;
 begin
-  ImgData := AllocMem(aWidth * aHeight * tsFormatSize(aFormat));
+  LineSize := aWidth * tsFormatSize(aFormat);
+  LineSize := LineSize + ((4 - (LineSize mod 4)) mod 4);
+  ImgData := AllocMem(aHeight * LineSize);
   SetData(ImgData, aFormat, aWidth, aHeight);
 end;
 
@@ -1019,16 +1042,17 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-constructor TtsFont.Create(const aRenderer: TtsRenderer; const aCreator: TtsFontGenerator; const aProperties: TtsFontProperties);
+constructor TtsFont.Create(const aRenderer: TtsRenderer; const aGenerator: TtsFontGenerator; const aProperties: TtsFontProperties);
 begin
   inherited Create;
   fRenderer     := aRenderer;
-  fCreator      := aCreator;
+  fGenerator    := aGenerator;
   fProperties   := aProperties;
   fCharSpacing  := 0;
   fTabWidth     := 0;
   fLineSpacing  := 0.0;
   fCreateChars  := true;
+  fGenerator.RegisterFont(self);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1036,7 +1060,7 @@ function TtsFont.AddChar(const aCharCode: WideChar): TtsChar;
 begin
   result := GetChar(aCharCode);
   if not Assigned(result) and fCreateChars and (Ord(aCharCode) > 0) then begin
-    result := fCreator.GenerateChar(aCharCode, self, fRenderer);
+    result := fGenerator.GenerateChar(aCharCode, self, fRenderer);
     if Assigned(result) then
       AddChar(aCharCode, result);
   end;
@@ -1132,6 +1156,19 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function TtsFont.GetTextWidthA(aText: PAnsiChar): Integer;
+var
+  tmp: PWideChar;
+begin
+  tmp := fGenerator.Context.AnsiToWide(aText);
+  try
+    result := GetTextWidthW(tmp);
+  finally
+    tsStrDispose(tmp);
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 procedure TtsFont.GetTextMetric(out aMetric: TtsTextMetric);
 begin
   aMetric.Ascent            := fProperties.Ascent;
@@ -1146,6 +1183,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 destructor TtsFont.Destroy;
 begin
+  fGenerator.UnregisterFont(self);
   ClearChars;
   inherited Destroy;
 end;
@@ -1354,6 +1392,19 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+procedure TtsFontGenerator.RegisterFont(const aFont: TtsFont);
+begin
+  fFonts.Add(aFont);
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+procedure TtsFontGenerator.UnregisterFont(const aFont: TtsFont);
+begin
+  if Assigned(fFonts) then
+    fFonts.Remove(aFont);
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function TtsFontGenerator.GenerateChar(const aCharCode: WideChar; const aFont: TtsFont; const aRenderer: TtsRenderer): TtsChar;
 var
   GlyphOrigin, GlyphSize: TtsPosition;
@@ -1435,16 +1486,22 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-constructor TtsFontGenerator.Create;
+constructor TtsFontGenerator.Create(const aContext: TtsContext);
 begin
   inherited Create;
+  fContext          := aContext;
+  fFonts            := TObjectList.Create(false);
   fPostProcessSteps := TObjectList.Create(true);
+  fContext.RegisterGenerator(self);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 destructor TtsFontGenerator.Destroy;
 begin
   ClearPostProcessSteps;
+  fContext.UnregisterGenerator(self);
+  fFonts.OwnsObjects := true;
+  FreeAndNil(fFonts);
   FreeAndNil(fPostProcessSteps);
   inherited Destroy;
 end;
@@ -1665,7 +1722,7 @@ function TtsTextBlock.SplitIntoLines(aItem: PtsLineItem): Boolean;
 var
   p: PtsLineItem;
 begin
-  result := falsE;
+  result := false;
   if not Assigned(fCurrentFont) then
     exit;
 
@@ -1699,6 +1756,7 @@ begin
               FreeLineItem(p);
             p := nil;
           end;
+          include(fLastLine^.Flags, tsAutoLineBreak);
           PushNewLine;
         end;
 
@@ -1840,6 +1898,7 @@ begin
   fVertAlign := tsVertAlignTop;
   fHorzAlign := tsHorzAlignLeft;
 
+  fRenderer.RegisterBlock(self);
   PushNewLine;
 end;
 
@@ -1858,6 +1917,7 @@ begin
   p^.Font      := fCurrentFont;
   PushLineItem(p);
   UpdateLineMeta(fLastLine);
+  fRenderer.UnregisterBlock(self);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1920,6 +1980,19 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //TtsRenderer///////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+procedure TtsRenderer.RegisterBlock(const aBlock: TtsTextBlock);
+begin
+  fBlocks.Add(aBlock);
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+procedure TtsRenderer.UnregisterBlock(const aBlock: TtsTextBlock);
+begin
+  if Assigned(fBlocks) then
+    fBlocks.Remove(aBlock);
+end;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 procedure TtsRenderer.BeginRender;
 begin
@@ -2052,7 +2125,8 @@ var
       tsHorzAlignRight:
         x := rect.Right - line^.meta.Width;
       tsHorzAlignJustify:
-        ExtraSpaceTotal  := (aBlock.Width - line^.meta.Width) / line^.meta.SpaceCount;
+        if (tsAutoLineBreak in line^.Flags) then
+          ExtraSpaceTotal := (aBlock.Width - line^.meta.Width) / line^.meta.SpaceCount;
     end;
 
     if DrawText then
@@ -2066,6 +2140,9 @@ var
   end;
 
 begin
+  if (aBlock.Renderer <> self) then
+    EtsException.Create('text block was created by other renderer');
+
   BeginRender;
   try
     // init variables
@@ -2099,12 +2176,17 @@ begin
   fContext    := aContext;
   fFormat     := aFormat;
   fSaveImages := true;
+  fBlocks     := TObjectList.Create(false);
   fRenderCS   := TCriticalSection.Create;
+  fContext.RegisterRenderer(self);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 destructor TtsRenderer.Destroy;
 begin
+  fContext.UnregisterRenderer(self);
+  fBlocks.OwnsObjects := true;
+  FreeAndNil(fBlocks);
   FreeAndNil(fRenderCS);
   inherited Destroy;
 end;
@@ -2112,31 +2194,41 @@ end;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //TtsContext////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+procedure TtsContext.RegisterRenderer(const aRenderer: TtsRenderer);
+begin
+  fRenderers.Add(aRenderer);
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+procedure TtsContext.UnregisterRenderer(const aRenderer: TtsRenderer);
+begin
+  if Assigned(fRenderers) then
+    fRenderers.Remove(aRenderer);
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+procedure TtsContext.RegisterGenerator(const aGenerator: TtsFontGenerator);
+begin
+  fGenerators.Add(aGenerator);
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+procedure TtsContext.UnregisterGenerator(const aGenerator: TtsFontGenerator);
+begin
+  if Assigned(fGenerators) then
+    fGenerators.Remove(aGenerator);
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function TtsContext.AnsiToWide(const aText: PAnsiChar): PWideChar;
 var
   len: Integer;
 begin
   result := nil;
-
   if not Assigned(aText) then
     exit;
   len := Length(aText);
-
-  // UTF-8
-  if (fCodePage = tsUTF8) then begin
-    result := tsStrAlloc(len);
-    tsUTF8ToWide(result, len, aText, fCodePageDefault);
-
-  // ISO 8859-1
-  end else if (fCodePage = tsISO_8859_1) then begin
-    result := tsStrAlloc(len);
-    tsISO_8859_1ToWide(result, len, aText);
-
-    // single or double byte CodePage
-  end else if Assigned(fCodePageFunc) and Assigned(fCodePagePtr) then begin
-    result := tsStrAlloc(len);
-    fCodePageFunc(result, len, aText, fCodePage, fCodePageDefault);
-  end;
+  tsAnsiToWide(result, len, aText, fCodePage, fCodePageDefault);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2144,17 +2236,20 @@ constructor TtsContext.Create;
 begin
   inherited Create;
 
-  fID := InterLockedIncrement(gLastContextID);
-
   fCodePage        := tsUTF8;
-  fCodePageFunc    := nil;
-  fCodePagePtr     := nil;
   fCodePageDefault := WideChar('?');
+
+  fRenderers  := TObjectList.Create(false);
+  fGenerators := TObjectList.Create(false);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 destructor TtsContext.Destroy;
 begin
+  fGenerators.OwnsObjects := true;
+  fRenderers.OwnsObjects  := true;
+  FreeAndNil(fGenerators);
+  FreeAndNil(fRenderers);
   inherited Destroy;
 end;
 

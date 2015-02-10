@@ -5,17 +5,23 @@ unit utsUtils;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, utsTypes;
 
 function  tsStrAlloc(aSize: Cardinal): PWideChar;
 function  tsStrNew(const aText: PWideChar): PWideChar;
 procedure tsStrDispose(const aText: PWideChar);
 function  tsStrLength(aText: PWideChar): Cardinal;
 function  tsStrCopy(aDst, aSrc: PWideChar): PWideChar;
+
+function  tsAnsiToWide(aDst: PWideChar; const aSize: Integer; aSrc: PAnsiChar; const aCodePage: TtsCodePage; const aDefaultChar: WideChar): Integer;
 function  tsISO_8859_1ToWide(aDst: PWideChar; const aSize: Integer; aSrc: PAnsiChar): Integer;
 function  tsUTF8ToWide(aDst: PWideChar; const aSize: Integer; const aSrc: PAnsiChar; const aDefaultChar: WideChar): Integer;
+function  tsAnsiSBCDToWide(aDst: PWideChar; const aSize: Integer; aSrc: PAnsiChar; const aCodePage: TtsCodePage; const aDefaultChar: WideChar): Integer;
 
 implementation
+
+uses
+  utsCodePages;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function tsStrAlloc(aSize: Cardinal): PWideChar;
@@ -62,11 +68,27 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function tsAnsiToWide(aDst: PWideChar; const aSize: Integer; aSrc: PAnsiChar;
+  const aCodePage: TtsCodePage; const aDefaultChar: WideChar): Integer;
+begin
+  result := 0;
+  case aCodePage of
+    tsUTF8:
+      result := tsUTF8ToWide(aDst, aSize, aSrc, aDefaultChar);
+
+    tsISO_8859_1:
+      result := tsISO_8859_1ToWide(aDst, aSize, aSrc);
+  else
+    result := tsAnsiSBCDToWide(aDst, aSize, aSrc, aCodePage, aDefaultChar);
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function tsISO_8859_1ToWide(aDst: PWideChar; const aSize: Integer; aSrc: PAnsiChar): Integer;
 begin
   result := 0;
   if Assigned(aDst) and Assigned(aSrc) then
-    while (ord(aSrc^) <> 0) do begin
+    while (ord(aSrc^) <> 0) and (result < aSize) do begin
       aDst^ := WideChar(aSrc^);
       inc(aDst);
       inc(aSrc);
@@ -137,6 +159,35 @@ begin
     if (result >= aSize) then
       exit;
     inc(p);
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function tsAnsiSBCDToWide(aDst: PWideChar; const aSize: Integer; aSrc: PAnsiChar;
+  const aCodePage: TtsCodePage; const aDefaultChar: WideChar): Integer;
+var
+  tmp: WideChar;
+  cp: PtsCodePageValues;
+begin
+  result := 0;
+  cp := ANSI_TO_WIDE_CODE_PAGE_LUT[aCodePage];
+  if not Assigned(aDst) or
+     not Assigned(aSrc) or
+     not Assigned(cp) or
+     (aSize < 0) then exit;
+
+  while (Ord(aSrc^) <> 0) and (result < aSize) do begin
+    tmp := WideChar(cp^[aSrc^]);
+    if (ord(tmp) = 0) then begin
+      if (ord(aDefaultChar) <> 0) then begin
+        aDst^ := aDefaultChar;
+        inc(aDst);
+      end;
+    end else begin
+      aDst^ := tmp;
+      inc(aDst);
+    end;
+    inc(aSrc);
   end;
 end;
 
