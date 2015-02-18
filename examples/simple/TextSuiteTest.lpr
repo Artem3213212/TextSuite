@@ -7,7 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, sysutils, Forms, uMainForm,
-  utsFontCreatorGDI, utsUtils, utsTypes, utsTtfUtils, utsTextSuite, utsRendererOpenGL, utsCodePages;
+  utsFontCreatorGDI, utsUtils, utsTypes, utsTtfUtils, utsTextSuite, utsRendererOpenGL, utsCodePages, utsPostProcess;
 
 {$R *.res}
 

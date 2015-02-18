@@ -77,7 +77,8 @@ type
     tsFormatEmpty,
     tsFormatRGBA8,
     tsFormatLumAlpha8,
-    tsFormatAlpha8);
+    tsFormatAlpha8,
+    tsFormatLum8);
 
   TtsAntiAliasing = (
     tsAANone,
@@ -168,7 +169,18 @@ type
     LineSpacing: Integer;
   end;
 
+  TtsBlendFunc = function(const aSrc, aDst: TtsColor4f): TtsColor4f;
+
+const
+  TS_CHANNELS_RGB:  TtsColorChannels = [tsChannelRed, tsChannelGreen, tsChannelBlue];
+  TS_CHANNELS_RGBA: TtsColorChannels = [tsChannelRed, tsChannelGreen, tsChannelBlue, tsChannelAlpha];
+
+  TS_MODES_REPLACE_ALL:    TtsImageModes = (tsModeReplace,  tsModeReplace,  tsModeReplace,  tsModeReplace);
+  TS_MODES_MODULATE_ALL:   TtsImageModes = (tsModeModulate, tsModeModulate, tsModeModulate, tsModeModulate);
+  TS_MODES_MODULATE_ALPHA: TtsImageModes = (tsModeReplace,  tsModeReplace,  tsModeReplace,  tsModeModulate);
+
 function tsColor4f(r, g, b, a: Single): TtsColor4f;
+function tsModes(r, g, b, a: TtsImageMode): TtsImageModes;
 function tsRect(const l, t, r, b: Integer): TtsRect;
 function tsPosition(const x, y: Integer): TtsPosition;
 
@@ -180,7 +192,14 @@ function tsImageModeFuncIgnore(const aSource, aDest: Single): Single;
 function tsImageModeFuncReplace(const aSource, aDest: Single): Single;
 function tsImageModeFuncModulate(const aSource, aDest: Single): Single;
 
+function tsBlendFundAlpha(const aSrc, aDst: TtsColor4f): TtsColor4f;
+function tsBlendFundAdditive(const aSrc, aDst: TtsColor4f): TtsColor4f;
+function tsBlendFundAdditiveAlpha(const aSrc, aDst: TtsColor4f): TtsColor4f;
+
 implementation
+
+uses
+  Math;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function tsColor4f(r, g, b, a: Single): TtsColor4f;
@@ -189,6 +208,15 @@ begin
   result.g := g;
   result.b := b;
   result.a := a;
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function tsModes(r, g, b, a: TtsImageMode): TtsImageModes;
+begin
+  result[tsChannelRed]   := r;
+  result[tsChannelGreen] := g;
+  result[tsChannelBlue]  := b;
+  result[tsChannelAlpha] := a;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -214,6 +242,7 @@ begin
     tsFormatRGBA8:      result := 4;
     tsFormatLumAlpha8:  result := 2;
     tsFormatAlpha8:     result := 1;
+    tsFormatLum8:       result := 1;
   else
     result := 0;
   end;
@@ -228,19 +257,31 @@ begin
   case aFormat of
     tsFormatRGBA8: begin
       for i := 0 to 3 do begin
-        aData^ := Trunc($FF * aColor.arr[i]);
+        aData^ := Trunc($FF * min(aColor.arr[i], 1.0));
         inc(aData);
       end;
     end;
 
     tsFormatLumAlpha8: begin
-      s := 0.30 * aColor.r + 0.59 * aColor.g + 0.11 * aColor.b;
-      aData^ := Trunc($FF * s);         inc(aData);
-      aData^ := Trunc($FF * aColor.a);  inc(aData);
+      s := 0.30 * min(aColor.r, 1.0) +
+           0.59 * min(aColor.g, 1.0) +
+           0.11 * min(aColor.b, 1.0);
+      aData^ := Trunc($FF * s);
+      inc(aData);
+      aData^ := Trunc($FF * min(aColor.a, 1.0));
+      inc(aData);
     end;
 
     tsFormatAlpha8: begin
-      aData^ := Trunc($FF * aColor.a);
+      aData^ := Trunc($FF * min(aColor.a, 1.0));
+      inc(aData);
+    end;
+
+    tsFormatLum8: begin
+      s := 0.30 * min(aColor.r, 1.0) +
+           0.59 * min(aColor.g, 1.0) +
+           0.11 * min(aColor.b, 1.0);
+      aData^ := Trunc($FF * s);
       inc(aData);
     end;
   end;
@@ -275,6 +316,14 @@ begin
       aColor.a := aData^ / $FF;
       inc(aData);
     end;
+
+    tsFormatLum8: begin
+      aColor.r := aData^ / $FF;
+      aColor.g := aData^ / $FF;
+      aColor.b := aData^ / $FF;
+      aColor.a := 1.0;
+      inc(aData);
+    end;
   end;
 end;
 
@@ -294,6 +343,34 @@ end;
 function tsImageModeFuncModulate(const aSource, aDest: Single): Single;
 begin
   result := aSource * aDest;
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function tsBlendFundAlpha(const aSrc, aDst: TtsColor4f): TtsColor4f;
+var
+  i: Integer;
+begin
+  for i := 0 to 2 do
+    result.arr[i] := aSrc.arr[i] * aSrc.a + aDst.arr[i] * (1 - aSrc.a);
+  result.a := aSrc.a + aDst.a * (1 - aSrc.a);
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function tsBlendFundAdditive(const aSrc, aDst: TtsColor4f): TtsColor4f;
+var
+  i: Integer;
+begin
+  for i := 0 to 3 do
+    result.arr[i] := aSrc.arr[i] + aDst.arr[i];
+end;
+
+function tsBlendFundAdditiveAlpha(const aSrc, aDst: TtsColor4f): TtsColor4f;
+var
+  i: Integer;
+begin
+  for i := 0 to 2 do
+    result.arr[i] := aSrc.arr[i] * aSrc.a + aDst.arr[i];
+  result.a := aDst.a;
 end;
 
 end.

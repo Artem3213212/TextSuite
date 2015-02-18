@@ -19,7 +19,6 @@ type
   TtsKernel1DItem = packed record
     Offset: Integer;
     Value: Single;
-    DataOffset: Integer;
   end;
 
   TtsKernel1D = class
@@ -30,11 +29,36 @@ type
     constructor Create(const aRadius, aStrength: Single);
   end;
 
+  TtsKernel2DItem = packed record
+    OffsetX: Integer;
+    OffsetY: Integer;
+    Value: Double;
+    DataOffset: Integer;
+  end;
+
+  TtsKernel2D = class
+  public
+    SizeX: Integer;
+    SizeY: Integer;
+
+    MidSizeX: Integer;
+    MidSizeY: Integer;
+
+    ValueSum: Double;
+
+    Items: array of TtsKernel2DItem;
+    ItemCount: Integer;
+
+    constructor Create(const aRadius, aStrength: Single);
+  end;
+
   TtsImageFunc = procedure(const aImage: TtsImage; X, Y: Integer; var aPixel: TtsColor4f; aArgs: Pointer);
   TtsImage = class(TObject)
   private
     fWidth: Integer;
     fHeight: Integer;
+    fDataSize: Integer;
+    fLineSize: Integer;
     fFormat: TtsFormat;
 
     fData: Pointer;
@@ -43,14 +67,18 @@ type
 
     function GetScanline(const aIndex: Integer): Pointer;
     function GetIsEmpty: Boolean;
-    procedure SetData(const aData: Pointer; const aFormat: TtsFormat = tsFormatEmpty; const aWidth: Integer = 0; const aHeight: Integer = 0);
+    procedure SetData(const aData: Pointer; const aFormat: TtsFormat = tsFormatEmpty;
+      const aWidth: Integer = 0; const aHeight: Integer = 0;
+      const aLineSize: Integer = 0; const aDataSize: Integer = 0);
     procedure UpdateScanlines;
   public
-    property IsEmpty: Boolean   read GetIsEmpty;
-    property Width:   Integer   read fWidth;
-    property Height:  Integer   read fHeight;
-    property Format:  TtsFormat read fFormat;
-    property Data:    Pointer   read fData;
+    property IsEmpty:  Boolean   read GetIsEmpty;
+    property Width:    Integer   read fWidth;
+    property Height:   Integer   read fHeight;
+    property LineSize: Integer   read fLineSize;
+    property DataSize: Integer   read fDataSize;
+    property Format:   TtsFormat read fFormat;
+    property Data:     Pointer   read fData;
     property Scanline[const aIndex: Integer]: Pointer read GetScanline;
 
     function GetPixelAt(const x, y: Integer; out aColor: TtsColor4f): Boolean;
@@ -64,7 +92,7 @@ type
 
     procedure FillColor(const aColor: TtsColor4f; const aChannelMask: TtsColorChannels; const aModes: TtsImageModes);
     procedure FillPattern(const aPattern: TtsImage; X, Y: Integer; const aChannelMask: TtsColorChannels; const aModes: TtsImageModes);
-    procedure BlendImage(const aImage: TtsImage; const X, Y: Integer);
+    procedure Blend(const aImage: TtsImage; const X, Y: Integer; const aFunc: TtsBlendFunc);
     procedure Blur(const aHorzKernel, aVertKernel: TtsKernel1D; const aChannelMask: TtsColorChannels);
 
     procedure AddResizingBorder;
@@ -159,9 +187,10 @@ type
     fExcludeCharRange: TList;
 
     procedure ClearList(const aList: TList);
+  protected
+    procedure Execute(const aChar: TtsChar; const aCharImage: TtsImage); virtual; abstract;
   public
     function IsInRange(const aCharCode: WideChar): Boolean;
-    procedure Execute(const aChar: TtsChar; const aCharImage: TtsImage); virtual; abstract;
 
     procedure AddUsageRange(const aUsage: TtsFontProcessStepUsage; const aStartChar, aEndChar: WideChar);
     procedure AddUsageChars(const aUsage: TtsFontProcessStepUsage; aChars: PWideChar);
@@ -465,6 +494,116 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//TtsKernel2D///////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+constructor TtsKernel2D.Create(const aRadius, aStrength: Single);
+var
+  tmpStrenght: Double;
+  tmpRadius: Double;
+  tmpValue: Double;
+  sqrRadius: Double;
+  x, y, w, h: Integer;
+
+  function CalcValue(const aIndex: Double): Double;
+  begin
+    result := max(0, Abs(aIndex) - tmpStrenght);
+    result := Sqr(result * tmpRadius) / sqrRadius;
+    result := Exp(-result);
+  end;
+
+  procedure CalcSize(var aSize, aMidSize: Integer);
+  begin
+    aSize    := 0;
+    aMidSize := 0;
+    while CalcValue(aSize) > 0.5 do begin
+      inc(aSize,    1);
+      inc(aMidSize, 1);
+    end;
+    while CalcValue(aSize) > 0.001 do
+      Inc(aSize, 1);
+  end;
+
+  procedure SetItem(const x, y: Integer);
+  begin
+    with Items[(SizeY + y) * w + (SizeX + x)] do begin
+      OffsetX := x;
+      OffsetY := y;
+      Value   := tmpValue;
+    end;
+  end;
+
+  procedure QuickSort(l, r: Integer);
+  var
+    _l, _r: Integer;
+    p, t: TtsKernel2DItem;
+  begin
+    repeat
+      _l := l;
+      _r := r;
+      p := Items[(l + r) shr 1];
+
+      repeat
+        while (Items[_l].Value > p.Value) do
+          inc(_l, 1);
+
+        while (Items[_r].Value < p.Value) do
+          dec(_r, 1);
+
+        if (_l <= _r) then begin
+          t         := Items[_l];
+          Items[_l] := Items[_r];
+          Items[_r] := t;
+          inc(_l, 1);
+          dec(_r, 1);
+        end;
+      until (_l > _r);
+
+      if (l < _r) then
+        QuickSort(l, _r);
+
+      l := _l;
+    until (_l >= r);
+  end;
+
+begin
+  inherited Create;
+
+  tmpStrenght := Min(aRadius - 1.0, aRadius * aStrength);
+  tmpRadius   := aRadius - tmpStrenght;
+  sqrRadius   := sqr(tmpRadius) * sqr(tmpRadius);
+
+  CalcSize(SizeX, MidSizeX);
+  CalcSize(SizeY, MidSizeY);
+
+  ValueSum  := 0.0;
+  w         := 2 * SizeX + 1;
+  h         := 2 * SizeY + 1;
+  ItemCount := w * h;
+  SetLength(Items, ItemCount);
+
+  for y := 0 to SizeY do begin
+    for x := 0 to SizeX do begin
+      tmpValue := CalcValue(sqrt(Sqr(x) + Sqr(y)));
+
+      SetItem( x,  y);
+      SetItem( x, -y);
+      SetItem(-x, -y);
+      SetItem(-x,  y);
+
+      ValueSum := ValueSum + tmpValue;
+      if (x > 0) and (y > 0) then
+        ValueSum := ValueSum + tmpValue;
+    end;
+  end;
+
+  QuickSort(0, ItemCount-1);
+
+  while (Items[ItemCount-1].Value < 0.001) do
+    dec(ItemCount, 1);
+  SetLength(Items, ItemCount);
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //TtsImage//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function TtsImage.GetScanline(const aIndex: Integer): Pointer;
@@ -485,7 +624,8 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsImage.SetData(const aData: Pointer; const aFormat: TtsFormat; const aWidth: Integer; const aHeight: Integer);
+procedure TtsImage.SetData(const aData: Pointer; const aFormat: TtsFormat; const aWidth: Integer;
+  const aHeight: Integer; const aLineSize: Integer; const aDataSize: Integer);
 begin
   fHasScanlines := false;
   if Assigned(fData) then
@@ -493,28 +633,30 @@ begin
 
   fData := aData;
   if Assigned(fData) then begin
-    fWidth  := aWidth;
-    fHeight := aHeight;
-    fFormat := aFormat;
+    fWidth    := aWidth;
+    fHeight   := aHeight;
+    fFormat   := aFormat;
+    fLineSize := aLineSize;
+    fDataSize := aDataSize;
   end else begin
-    fWidth  := 0;
-    fHeight := 0;
-    fFormat := tsFormatEmpty;
+    fWidth    := 0;
+    fHeight   := 0;
+    fLineSize := 0;
+    fDataSize := 0;
+    fFormat   := tsFormatEmpty;
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 procedure TtsImage.UpdateScanlines;
 var
-  i, LineSize: Integer;
+  i: Integer;
   tmp: PByte;
 begin
-  LineSize := fWidth * tsFormatSize(fFormat);
-  LineSize := LineSize + ((4 - (LineSize mod 4)) mod 4);
   SetLength(fScanlines, fHeight);
   for i := 0 to fHeight-1 do begin
     tmp := fData;
-    inc(tmp, i * LineSize);
+    inc(tmp, i * fLineSize);
     fScanlines[i] := tmp;
   end;
   fHasScanlines := true;
@@ -537,27 +679,25 @@ end;
 procedure TtsImage.Assign(const aImage: TtsImage);
 var
   ImgData: Pointer;
-  ImgSize, LineSize: Integer;
 begin
-  LineSize := aImage.Width * tsFormatSize(aImage.Format);
-  LineSize := LineSize + ((4 - (LineSize mod 4)) mod 4);
-  ImgSize := LineSize * aImage.Height;
-  GetMem(ImgData, ImgSize);
+  GetMem(ImgData, aImage.DataSize);
   if Assigned(ImgData) then
-    Move(aImage.Data, ImgData, ImgSize);
-  SetData(ImgData, aImage.Format, aImage.Width, aImage.Height);
+    Move(aImage.Data^, ImgData^, aImage.DataSize);
+  SetData(ImgData, aImage.Format, aImage.Width, aImage.Height, aImage.LineSize, aImage.DataSize);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 procedure TtsImage.CreateEmpty(const aFormat: TtsFormat; const aWidth, aHeight: Integer);
 var
   ImgData: PByte;
-  LineSize: Integer;
+  lSize, dSize: Integer;
 begin
-  LineSize := aWidth * tsFormatSize(aFormat);
-  LineSize := LineSize + ((4 - (LineSize mod 4)) mod 4);
-  ImgData := AllocMem(aHeight * LineSize);
-  SetData(ImgData, aFormat, aWidth, aHeight);
+  lSize   := aWidth * tsFormatSize(aFormat);
+  lSize   := lSize + ((4 - (lSize mod 4)) mod 4);
+  dSize   := aHeight * lSize;
+  ImgData := AllocMem(dSize);
+  FillByte(ImgData^, dSize, 0);
+  SetData(ImgData, aFormat, aWidth, aHeight, lSize, dSize);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -582,7 +722,7 @@ end;
 procedure TtsImage.Resize(const aNewWidth, aNewHeight, X, Y: Integer);
 var
   ImgData: PByte;
-  PixSize, LineSize, ImageSize, OrgLineSize: Integer;
+  pSize, lSize, dSize: Integer;
 
   src, dst: PByte;
   YStart, YEnd, YPos, XStart, XEnd: Integer;
@@ -592,14 +732,14 @@ begin
     exit;
   end;
 
-  PixSize     := tsFormatSize(Format);
-  LineSize    := PixSize  * aNewWidth;
-  ImageSize   := LineSize * aNewHeight;
-  OrgLineSize := PixSize  * Width;
+  pSize     := tsFormatSize(Format);
+  lSize     := pSize * aNewWidth;
+  lSize     := lSize + ((4 - (lSize mod 4)) mod 4);
+  dSize     := lSize * aNewHeight;
 
-  GetMem(ImgData, ImageSize);
+  GetMem(ImgData, dSize);
   try
-    FillChar(ImgData^, ImageSize, 0);
+    FillChar(ImgData^, dSize, 0);
 
     // positions
     YStart := Max(0, Y);
@@ -610,16 +750,16 @@ begin
     // copy data
     for YPos := YStart to YEnd -1 do begin
       dst := ImgData;
-      Inc(dst, LineSize * YPos + PixSize * XStart);
+      Inc(dst, lSize * YPos + pSize * XStart);
 
       src := fData;
-      Inc(src, OrgLineSize * (YPos - Y) + PixSize * (XStart - X));
+      Inc(src, fLineSize * (YPos - Y) + pSize * (XStart - X));
 
-      Move(src^, dst^, (XEnd - XStart) * PixSize);
+      Move(src^, dst^, (XEnd - XStart) * pSize);
     end;
 
     // assign
-    SetData(ImgData, Format, aNewWidth, aNewHeight);
+    SetData(ImgData, Format, aNewWidth, aNewHeight, lSize, dSize);
   except
     FreeMem(ImgData);
   end;
@@ -663,20 +803,22 @@ end;
 procedure TtsImage.FillColor(const aColor: TtsColor4f; const aChannelMask: TtsColorChannels; const aModes: TtsImageModes);
 var
   x, y: Integer;
-  p: PByte;
+  rp, wp: PByte;
   c: TtsColor4f;
   ch: TtsColorChannel;
   i: Integer;
 begin
   for y := 0 to Height-1 do begin
-    p := Scanline[y];
+    rp := Scanline[y];
+    wp := rp;
     for x := 0 to Width-1 do begin
-      tsFormatUnmap(Format, p, c);
+      tsFormatUnmap(Format, rp, c);
       for i := 0 to 3 do begin
         ch := TtsColorChannel(i);
         if (ch in aChannelMask) then
           c.arr[i] := IMAGE_MODE_FUNCTIONS[aModes[ch]](aColor.arr[i], c.arr[i]);
       end;
+      tsFormatMap(Format, wp, c);
     end;
   end;
 end;
@@ -708,7 +850,7 @@ begin
       end;
 
       tmp := dst;
-      tsFormatUnmap(Format, src, cSrc);
+      tsFormatUnmap(aPattern.Format, src, cSrc);
       tsFormatUnmap(Format, tmp, cDst);
       for i := 0 to 3 do begin
         ch := TtsColorChannel(i);
@@ -722,97 +864,30 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsImage.BlendImage(const aImage: TtsImage; const X, Y: Integer);
+procedure TtsImage.Blend(const aImage: TtsImage; const X, Y: Integer; const aFunc: TtsBlendFunc);
 var
-  _x, _y, i: Integer;
-  c, cOver, cUnder: TtsColor4f;
-  FaqOver, FaqUnder: Single;
-  UnionRect, IntersectRect: TtsRect;
-  NewSize: TtsPosition;
-  ImgSize: Integer;
-  ImgData, dst, src, pOver, pUnder: PByte;
-  tmpLines: array of Pointer;
+  _x, _y, x1, x2, y1, y2: Integer;
+  src, dst, tmp: PByte;
+  srcColor, dstColor: TtsColor4f;
+  srcPixelSize, dstPixelSize: Integer;
 begin
-  UnionRect := tsRect(
-    Min(X, 0),
-    Min(Y, 0),
-    Max(X + aImage.Width,  Width),
-    Max(Y + aImage.Height, Height));
-  IntersectRect := tsRect(
-    Max(X, 0),
-    Max(Y, 0),
-    Min(X + aImage.Width, Width),
-    Min(X + aImage.Height, Height));
-  NewSize := tsPosition(
-    UnionRect.Right  - UnionRect.Left,
-    UnionRect.Bottom - UnionRect.Top);
-
-  ImgSize := NewSize.x * NewSize.y * tsFormatSize(Format);
-  GetMem(ImgData, ImgSize);
-  try
-    FillByte(ImgData^, ImgSize, $00);
-
-    // temporary scanlines
-    SetLength(tmpLines, NewSize.y);
-    for _y := 0 to NewSize.y-1 do begin
-      tmpLines[_y] := ImgData;
-      inc(tmpLines[_y], _y * NewSize.y);
+  x1 := Max(X, 0);
+  x2 := Min(X + aImage.Width , Width);
+  y1 := Max(Y, 0);
+  y2 := Min(Y + aImage.Height, Height);
+  srcPixelSize := tsFormatSize(aImage.Format);
+  dstPixelSize := tsFormatSize(Format);
+  for _y := y1 to y2-1 do begin
+    src := aImage.Scanline[_y - min(y1, y)];
+    dst := Scanline[_y];
+    inc(src, (x1 - x) * srcPixelSize);
+    inc(dst,  x1      * dstPixelSize);
+    tmp := dst;
+    for _x := x1 to x2-1 do begin
+      tsFormatUnmap(aImage.Format, src, srcColor);
+      tsFormatUnmap(       Format, dst, dstColor);
+      tsFormatMap(aImage.Format, tmp, aFunc(srcColor, dstColor));
     end;
-
-    // copy data from underlaying image
-    for _y := 0 to Height-1 do begin
-      src := Scanline[_y];
-      dst := tmpLines[_y - UnionRect.Top];
-      dec(dst, UnionRect.Left);
-      for _x := 0 to Width-1 do begin
-        dst^ := src^;
-        inc(src);
-        inc(dst);
-      end;
-    end;
-
-    // copy data from overlaying image
-    for _y := 0 to aImage.Height-1 do begin
-      src := aImage.Scanline[_y];
-      dst := tmpLines[_y + y - UnionRect.Top];
-      inc(dst, X - UnionRect.Left);
-      for _x := 0 to Width-1 do begin
-        dst^ := src^;
-        inc(src);
-        inc(dst);
-      end;
-    end;
-
-    // blend overlapped
-    for _y := IntersectRect.Top to IntersectRect.Bottom-1 do begin
-      pOver := aImage.Scanline[_y - Min(IntersectRect.Top, UnionRect.Top)];
-      inc(pOver, IntersectRect.Left - UnionRect.Left);
-
-      pUnder := Scanline[_y - Min(IntersectRect.Top, 0)];
-      inc(pUnder, IntersectRect.Left);
-
-      dst := tmpLines[_y - Min(Y, 0)];
-      inc(dst, IntersectRect.Left - Min(X, 0));
-
-      for _x := IntersectRect.Left to IntersectRect.Right-1 do begin
-        tsFormatUnmap(aImage.Format, pOver,  cOver);
-        tsFormatUnmap(Format,        pUnder, cUnder);
-        c.a := cOver.a + cUnder.a * (1 - cOver.a);
-        if (c.a > 0) then begin
-          FaqUnder := (cUnder.a * (1 - cOver.a)) / c.a;
-          FaqOver  :=  cOver.a                   / c.a;
-          for i := 0 to 2 do
-            c.arr[i] := cOver.arr[i] * FaqOver + cUnder.arr[i] * FaqUnder;
-        end else begin
-          c.r := 0;
-          c.g := 0;
-          c.b := 0;
-        end;
-        tsFormatMap(Format, dst, c);
-      end;
-    end;
-  except
-    FreeMem(ImgData);
   end;
 end;
 

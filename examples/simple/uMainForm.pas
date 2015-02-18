@@ -8,7 +8,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, uglcContext, TextSuite, uglcTypes,
-  utsTextSuite, utsTypes, utsFontCreatorGDI, utsRendererOpenGL;
+  utsTextSuite, utsTypes, utsFontCreatorGDI, utsRendererOpenGL, utsPostProcess;
 
 type
   TMainForm = class(TForm)
@@ -53,6 +53,18 @@ const
 procedure TMainForm.FormCreate(Sender: TObject);
 var
   pf: TglcContextPixelFormatSettings;
+  pp: TtsPostProcessStep;
+  pa: TtsImage;
+const
+  data: array[0..63] of Byte = (
+    $FF, $AA, $88, $44, $44, $88, $AA, $FF,
+    $AA, $88, $44, $22, $22, $44, $88, $AA,
+    $88, $44, $22, $11, $11, $22, $44, $88,
+    $44, $22, $11, $00, $00, $11, $22, $44,
+    $44, $22, $11, $00, $00, $11, $22, $44,
+    $88, $44, $22, $11, $11, $22, $44, $88,
+    $AA, $88, $44, $22, $22, $44, $88, $AA,
+    $FF, $AA, $88, $44, $44, $88, $AA, $FF);
 begin
   pf := TglcContext.MakePF();
   fContext := TglcContext.GetPlatformClass.Create(self, pf);
@@ -67,9 +79,18 @@ begin
   tsFontBind(ftsFont);
   {$ELSE}
   ftsContext   := TtsContext.Create;
-  ftsRenderer  := TtsRendererOpenGL.Create(ftsContext, tsFormatAlpha8);
+  ftsRenderer  := TtsRendererOpenGL.Create(ftsContext, tsFormatRGBA8);
   ftsGenerator := TtsFontGeneratorGDI.Create(ftsContext);
-  ftsFont1     := ftsGenerator.GetFontByName('Calibri', ftsRenderer, 25, [tsStyleBold, tsStyleItalic], tsAANormal);
+
+  pp := TtsPostProcessFillColor.Create(tsColor4f(0.0, 0.0, 0.0, 1.0), TS_MODES_MODULATE_ALPHA, TS_CHANNELS_RGBA);
+  pp.AddUsageRange(tsUsageInclude, #$0000, #$FFFF);
+  ftsGenerator.AddPostProcessStep(pp);
+
+  pp := TtsPostProcessShadow.Create(3, 0, 2, 2, tsColor4f(1.0, 0.0, 1.0, 0.05));
+  pp.AddUsageRange(tsUsageInclude, #$0000, #$FFFF);
+  ftsGenerator.AddPostProcessStep(pp);
+
+  ftsFont1     := ftsGenerator.GetFontByName('Calibri', ftsRenderer, 100, [tsStyleBold, tsStyleItalic], tsAANormal);
   ftsFont2     := ftsGenerator.GetFontByName('Calibri', ftsRenderer, 20, [], tsAANormal);
   {$ENDIF}
 end;
@@ -113,7 +134,7 @@ begin
   fFrameTime := t;
 
   glViewport(0, 0, ClientWidth, ClientHeight);
-  glClearColor(0, 0, 0, 0);
+  glClearColor(1, 1, 1, 0);
   glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
 
   glMatrixMode(GL_PROJECTION);
@@ -123,7 +144,7 @@ begin
   glLoadIdentity;
 
   glEnable(GL_BLEND);
-  glcBlendFunc(TglcBlendMode.bmAdditiveAlphaBlend);
+  glcBlendFunc(TglcBlendMode.bmAlphaBlend);
 
   {$IFDEF USE_OLD_TS}
   tsTextBeginBlock(0, 0, ClientWidth, ClientHeight, TS_ALIGN_BLOCK);
@@ -135,7 +156,7 @@ begin
     block.HorzAlign := tsHorzAlignJustify;
 
     block.ChangeFont(ftsFont1);
-    block.ChangeColor(tsColor4f(1.0, 0.0, 0.0, 1.0));
+    block.ChangeColor(tsColor4f(1.0, 1.0, 1.0, 1.0));
     block.TextOutW('L');
 
     block.ChangeFont(ftsFont2);
@@ -143,7 +164,7 @@ begin
     block.TextOutW(TEST_STRING + sLineBreak);
 
     block.ChangeFont(ftsFont1);
-    block.ChangeColor(tsColor4f(0.0, 1.0, 0.0, 1.0));
+    block.ChangeColor(tsColor4f(1.0, 1.0, 1.0, 1.0));
     block.TextOutW('L');
 
     block.ChangeFont(ftsFont2);

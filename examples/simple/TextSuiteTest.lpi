@@ -33,7 +33,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="9">
+    <Units Count="10">
       <Unit0>
         <Filename Value="TextSuiteTest.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -80,6 +80,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="utsCodePages"/>
       </Unit8>
+      <Unit9>
+        <Filename Value="..\..\utsPostProcess.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsPostProcess"/>
+      </Unit9>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

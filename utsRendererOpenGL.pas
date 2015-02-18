@@ -107,6 +107,10 @@ const
     ( //tsFormatAlpha8
       InternalFormat: GL_ALPHA8;
       Format:         GL_ALPHA;
+      DataFormat:     GL_UNSIGNED_BYTE),
+    ( //tsFormatAlpha8
+      InternalFormat: GL_LUMINANCE8;
+      Format:         GL_LUMINANCE;
       DataFormat:     GL_UNSIGNED_BYTE)
   );
 
