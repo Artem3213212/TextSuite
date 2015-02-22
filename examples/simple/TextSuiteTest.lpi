@@ -33,7 +33,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="10">
+    <Units Count="13">
       <Unit0>
         <Filename Value="TextSuiteTest.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -85,6 +85,21 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="utsPostProcess"/>
       </Unit9>
+      <Unit10>
+        <Filename Value="..\..\utsFontCreatorFreeType.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsFontCreatorFreeType"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="..\..\utsGDI.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsGDI"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="..\..\utsFreeType.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsFreeType"/>
+      </Unit12>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -16,6 +16,7 @@ function  tsStrCopy(aDst, aSrc: PWideChar): PWideChar;
 function  tsAnsiToWide(aDst: PWideChar; const aSize: Integer; aSrc: PAnsiChar; const aCodePage: TtsCodePage; const aDefaultChar: WideChar): Integer;
 function  tsISO_8859_1ToWide(aDst: PWideChar; const aSize: Integer; aSrc: PAnsiChar): Integer;
 function  tsUTF8ToWide(aDst: PWideChar; const aSize: Integer; const aSrc: PAnsiChar; const aDefaultChar: WideChar): Integer;
+function  tsUTFBE16ToWide(aDst: PWideChar; const aDstSize: Integer; aSrc: PByte; aSrcSize: Integer; const aDefaultChar: WideChar): Integer;
 function  tsAnsiSBCDToWide(aDst: PWideChar; const aSize: Integer; aSrc: PAnsiChar; const aCodePage: TtsCodePage; const aDefaultChar: WideChar): Integer;
 
 implementation
@@ -159,6 +160,33 @@ begin
     if (result >= aSize) then
       exit;
     inc(p);
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function tsUTFBE16ToWide(aDst: PWideChar; const aDstSize: Integer; aSrc: PByte; aSrcSize: Integer;
+  const aDefaultChar: WideChar): Integer;
+var
+  tmp: Word;
+
+  procedure AddToDest(aCharCode: Word);
+  begin
+    if ((aCharCode and $D800) = $D800) or
+       ((aCharCode and $DC00) = $DC00) then
+         aCharCode := Ord(aDefaultChar);
+
+    aDst^ := WideChar(aCharCode);
+    inc(aDst, 1);
+    result := result + 1;
+  end;
+
+begin
+  result := 0;
+  while (aSrcSize > 1) and (aDstSize > 0) do begin
+    tmp := (aSrc^ shl 8) or (aSrc + 1)^;
+    inc(aSrc, 2);
+    dec(aSrcSize, 2);
+    AddToDest(tmp);
   end;
 end;
 

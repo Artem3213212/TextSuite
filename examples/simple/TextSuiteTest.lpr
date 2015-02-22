@@ -6,8 +6,8 @@ uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
-  Interfaces, sysutils, Forms, uMainForm,
-  utsFontCreatorGDI, utsUtils, utsTypes, utsTtfUtils, utsTextSuite, utsRendererOpenGL, utsCodePages, utsPostProcess;
+  Interfaces, sysutils, Forms, uMainForm, utsFontCreatorGDI, utsUtils, utsTypes, utsTtfUtils, utsTextSuite,
+  utsRendererOpenGL, utsCodePages, utsPostProcess, utsFontCreatorFreeType, utsGDI, utsFreeType;
 
 {$R *.res}
 

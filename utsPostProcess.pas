@@ -235,6 +235,10 @@ begin
     tmpX := fKernel.Size - fX;
     tmpY := fKernel.Size - fY;
     aCharImage.Blend(orig, tmpX, tmpY, @tsBlendFundAlpha);
+
+    aChar.GlyphOrigin := tsPosition(
+      aChar.GlyphOrigin.x - tmpX,
+      aChar.GlyphOrigin.y - tmpX);
   finally
     FreeAndNil(orig);
   end;

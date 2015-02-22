@@ -7,8 +7,8 @@ unit uMainForm;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, uglcContext, TextSuite, uglcTypes,
-  utsTextSuite, utsTypes, utsFontCreatorGDI, utsRendererOpenGL, utsPostProcess;
+  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, uglcContext, uglcTypes,
+  utsTextSuite, utsTypes, utsFontCreatorGDI, utsRendererOpenGL, utsPostProcess, utsFontCreatorFreeType;
 
 type
   TMainForm = class(TForm)
@@ -29,8 +29,10 @@ type
     ftsContext:   TtsContext;
     ftsRenderer:  TtsRendererOpenGL;
     ftsGenerator: TtsFontGeneratorGDI;
+    ftsFreeType:  TtsFontGeneratorFreeType;
     ftsFont1:     TtsFont;
     ftsFont2:     TtsFont;
+    ftsFont3:     TtsFont;
     {$ENDIF}
     procedure Render;
   public
@@ -48,23 +50,13 @@ uses
   dglOpenGL;
 
 const
-  TEST_STRING = 'orem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.';
+  //TEST_STRING = 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.';
+  TEST_STRING = 'Lorem';
 
 procedure TMainForm.FormCreate(Sender: TObject);
 var
   pf: TglcContextPixelFormatSettings;
   pp: TtsPostProcessStep;
-  pa: TtsImage;
-const
-  data: array[0..63] of Byte = (
-    $FF, $AA, $88, $44, $44, $88, $AA, $FF,
-    $AA, $88, $44, $22, $22, $44, $88, $AA,
-    $88, $44, $22, $11, $11, $22, $44, $88,
-    $44, $22, $11, $00, $00, $11, $22, $44,
-    $44, $22, $11, $00, $00, $11, $22, $44,
-    $88, $44, $22, $11, $11, $22, $44, $88,
-    $AA, $88, $44, $22, $22, $44, $88, $AA,
-    $FF, $AA, $88, $44, $44, $88, $AA, $FF);
 begin
   pf := TglcContext.MakePF();
   fContext := TglcContext.GetPlatformClass.Create(self, pf);
@@ -82,6 +74,8 @@ begin
   ftsRenderer  := TtsRendererOpenGL.Create(ftsContext, tsFormatRGBA8);
   ftsGenerator := TtsFontGeneratorGDI.Create(ftsContext);
 
+  ftsFreeType := TtsFontGeneratorFreeType.Create(ftsContext);
+  {
   pp := TtsPostProcessFillColor.Create(tsColor4f(0.0, 0.0, 0.0, 1.0), TS_MODES_MODULATE_ALPHA, TS_CHANNELS_RGBA);
   pp.AddUsageRange(tsUsageInclude, #$0000, #$FFFF);
   ftsGenerator.AddPostProcessStep(pp);
@@ -89,9 +83,15 @@ begin
   pp := TtsPostProcessShadow.Create(3, 0, 2, 2, tsColor4f(1.0, 0.0, 1.0, 0.05));
   pp.AddUsageRange(tsUsageInclude, #$0000, #$FFFF);
   ftsGenerator.AddPostProcessStep(pp);
-
-  ftsFont1     := ftsGenerator.GetFontByName('Calibri', ftsRenderer, 100, [tsStyleBold, tsStyleItalic], tsAANormal);
-  ftsFont2     := ftsGenerator.GetFontByName('Calibri', ftsRenderer, 20, [], tsAANormal);
+  }
+  try
+    ftsFont1 := ftsGenerator.GetFontByFile('Calibri',    ftsRenderer, 25,  [tsStyleBold], tsAANormal);
+    ftsFont2 := ftsGenerator.GetFontByName('Calibri',    ftsRenderer, 20,  [], tsAANormal);
+    ftsFont3 := ftsFreeType.GetFontByFile('calibrib.ttf', ftsRenderer, 25, tsAANone);
+  except
+    on e: EtsException do
+      MessageDlg('Error', e.Message, mtError, [mbOK], 0);
+  end;
   {$ENDIF}
 end;
 
@@ -104,6 +104,7 @@ begin
   FreeAndNil(ftsFont1);
   FreeAndNil(ftsFont2);
   FreeAndNil(ftsGenerator);
+  FreeAndNil(ftsFreeType);
   FreeAndNil(ftsRenderer);
   FreeAndNil(ftsContext);
   {$ENDIF}
@@ -134,7 +135,7 @@ begin
   fFrameTime := t;
 
   glViewport(0, 0, ClientWidth, ClientHeight);
-  glClearColor(1, 1, 1, 0);
+  glClearColor(0, 0, 0, 0);
   glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
 
   glMatrixMode(GL_PROJECTION);
@@ -151,25 +152,17 @@ begin
   tsTextOutA(TEST_STRING);
   tsTextEndBlock;
   {$ELSE}
-  block := ftsRenderer.BeginBlock(10, 10, ClientWidth-20, ClientHeight-20, [tsBlockFlagWordWrap]);
+  block := ftsRenderer.BeginBlock(0, 0, ClientWidth, ClientHeight, [tsBlockFlagWordWrap]);
   try
     block.HorzAlign := tsHorzAlignJustify;
 
     block.ChangeFont(ftsFont1);
     block.ChangeColor(tsColor4f(1.0, 1.0, 1.0, 1.0));
-    block.TextOutW('L');
-
-    block.ChangeFont(ftsFont2);
-    block.ChangeColor(tsColor4f(1.0, 1.0, 1.0, 1.0));
     block.TextOutW(TEST_STRING + sLineBreak);
 
-    block.ChangeFont(ftsFont1);
+    block.ChangeFont(ftsFont3);
     block.ChangeColor(tsColor4f(1.0, 1.0, 1.0, 1.0));
-    block.TextOutW('L');
-
-    block.ChangeFont(ftsFont2);
-    block.ChangeColor(tsColor4f(1.0, 1.0, 1.0, 1.0));
-    block.TextOutW(TEST_STRING);
+    block.TextOutA(TEST_STRING);
   finally
     ftsRenderer.EndBlock(block);
   end;

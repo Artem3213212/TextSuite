@@ -1513,7 +1513,7 @@ begin
         try
           if (tsStyleUnderline in aFont.Properties.Style) then
             DrawLine(result, CharImage, aFont.Properties.UnderlinePos, aFont.Properties.UnderlineSize);
-          if (tsStyleUnderline in aFont.Properties.Style) then
+          if (tsStyleStrikeout in aFont.Properties.Style) then
             DrawLine(result, CharImage, aFont.Properties.StrikeoutPos, aFont.Properties.StrikeoutSize);
         except
           CharImage.FillColor(tsColor4f(1, 0, 0, 0), COLOR_CHANNELS_RGB, IMAGE_MODES_NORMAL);
@@ -2099,7 +2099,7 @@ var
   font: TtsFont;
   char: TtsChar;
   metric: TtsTextMetric;
-  DrawText: Boolean;
+  draw: Boolean;
 
   function GetChar(const aCharCode: WideChar): TtsChar;
   begin
@@ -2121,7 +2121,7 @@ var
       end;
 
       tsItemTypeText: begin
-        if DrawText and Assigned(font) then begin
+        if draw and Assigned(font) then begin
           c := item^.Text;
           while (c^ <> #0) do begin
             char := GetChar(c^);
@@ -2136,7 +2136,7 @@ var
       end;
 
       tsItemTypeSpace: begin
-        if DrawText and Assigned(font) then begin
+        if draw and Assigned(font) then begin
           ExtraSpaceActual := ExtraSpaceActual + ExtraSpaceTotal;
           c := item^.Text;
           while (c^ <> #0) do begin
@@ -2185,9 +2185,11 @@ var
     // check vertical clipping
     case aBlock.Clipping of
       tsClipCharBorder, tsClipWordBorder:
-        DrawText := (y + line^.meta.Height > rect.Top) and (y < rect.Bottom);
+        draw := (y + line^.meta.Height > rect.Top) and (y < rect.Bottom);
       tsClipCharComplete, tsClipWordComplete:
-        DrawText := (y > rect.Top) and (y + line^.meta.Height < rect.Bottom);
+        draw := (y > rect.Top) and (y + line^.meta.Height < rect.Bottom);
+    else
+      draw := true;
     end;
 
     // check horizontal alignment
@@ -2204,7 +2206,7 @@ var
           ExtraSpaceTotal := (aBlock.Width - line^.meta.Width) / line^.meta.SpaceCount;
     end;
 
-    if DrawText then
+    if draw then
       SetDrawPos(x, y + line^.meta.Ascent);
     inc(y, line^.meta.Height + line^.meta.Spacing);
     item := line^.First;
@@ -2303,6 +2305,7 @@ begin
   if not Assigned(aText) then
     exit;
   len := Length(aText);
+  result := tsStrAlloc(len);
   tsAnsiToWide(result, len, aText, fCodePage, fCodePageDefault);
 end;
 
