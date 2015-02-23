@@ -1446,8 +1446,8 @@ begin
   // move glyph rect
   aChar.GlyphRect := tsRect(
     aChar.GlyphRect.Left   + NewPos.x,
-    aChar.GlyphRect.Right  + NewPos.x,
     aChar.GlyphRect.Top    + NewPos.y,
+    aChar.GlyphRect.Right  + NewPos.x,
     aChar.GlyphRect.Bottom + NewPos.y);
 end;
 

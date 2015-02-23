@@ -11,7 +11,9 @@ type
   // Simple Types
   FT_Error    = Integer;
   FT_Library  = Pointer;
-  FT_Short    = ShortInt;
+  FT_Short    = SmallInt;
+  FT_Byte     = Byte;
+  FT_Char     = AnsiChar;
   FT_UShort   = Word;
   FT_Int      = Integer;
   FT_Int32    = Integer;
@@ -33,11 +35,14 @@ type
   FT_Size       = ^FT_SizeRec;
   FT_CharMap    = ^FT_CharMapRec;
 
-  PFT_Library   = ^FT_Library;
-  PFT_Face      = ^FT_Face;
-  PFT_String    = ^FT_String;
-  PFT_SfntName  = ^FT_SfntName;
-  PFT_Bitmap    = ^FT_Bitmap;
+  PFT_Library    = ^FT_Library;
+  PFT_Face       = ^FT_Face;
+  PFT_String     = ^FT_String;
+  PFT_SfntName   = ^FT_SfntName;
+  PFT_Bitmap     = ^FT_Bitmap;
+  PTT_OS2        = ^TT_OS2;
+  PTT_Postscript = ^TT_Postscript;
+  PTT_HoriHeader = ^TT_HoriHeader;
 
   // unneeded
   FT_Driver         = Pointer;
@@ -233,6 +238,94 @@ type
     string_len:   FT_UInt;
   end;
 
+  TT_OS2 = record
+    version:        FT_UShort;
+    xAvgCharWidth:  FT_Short;
+    usWeightClass:  FT_UShort;
+    usWidthClass:   FT_UShort;
+    fsType:         FT_Short;
+
+    ySubscriptXSize:      FT_Short;
+    ySubscriptYSize:      FT_Short;
+    ySubscriptXOffset:    FT_Short;
+    ySubscriptYOffset:    FT_Short;
+    ySuperscriptXSize:    FT_Short;
+    ySuperscriptYSize:    FT_Short;
+    ySuperscriptXOffset:  FT_Short;
+    ySuperscriptYOffset:  FT_Short;
+    yStrikeoutSize:       FT_Short;
+    yStrikeoutPosition:   FT_Short;
+    sFamilyClass:         FT_Short;
+
+    panose: array[0..9] of FT_Byte;
+
+    ulUnicodeRange1: FT_ULong;
+    ulUnicodeRange3: FT_ULong;
+    ulUnicodeRange2: FT_ULong;
+    ulUnicodeRange4: FT_ULong;
+
+    achVendID: array[0..3] of FT_Char;
+
+    fsSelection:      FT_UShort;
+    usFirstCharIndex: FT_UShort;
+    usLastCharIndex:  FT_UShort;
+    sTypoAscender:    FT_Short;
+    sTypoDescender:   FT_Short;
+    sTypoLineGap:     FT_Short;
+    usWinAscent:      FT_UShort;
+    usWinDescent:     FT_UShort;
+
+    ulCodePageRange1: FT_ULong;
+    ulCodePageRange2: FT_ULong;
+
+    { only version 2 and higher: }
+    sxHeight:       FT_Short;
+    sCapHeight:     FT_Short;
+    usDefaultChar:  FT_UShort;
+    usBreakChar:    FT_UShort;
+    usMaxContext:   FT_UShort;
+
+    { only version 5 and higher: }
+    usLowerOpticalPointSize: FT_UShort;
+    usUpperOpticalPointSize: FT_UShort;
+  end;
+
+  TT_Postscript = record
+    FormatType:         FT_Fixed;
+    italicAngle:        FT_Fixed;
+    underlinePosition:  FT_Short;
+    underlineThickness: FT_Short;
+    isFixedPitch:       FT_ULong;
+    minMemType42:       FT_ULong;
+    maxMemType42:       FT_ULong;
+    minMemType1:        FT_ULong;
+    maxMemType1:        FT_ULong;
+  end;
+
+  TT_HoriHeader = record
+    Version:    FT_Fixed;
+    Ascender:   FT_Short;
+    Descender:  FT_Short;
+    Line_Gap:   FT_Short;
+
+    advance_Width_Max: FT_UShort;
+
+    min_Left_Side_Bearin:   FT_Short;
+    min_Right_Side_Bearing: FT_Short;
+    xMax_Extent:            FT_Short;
+    caret_Slope_Rise:       FT_Short;
+    caret_Slope_Run:        FT_Short;
+    caret_Offset:           FT_Short;
+
+    Reserved: array[0..3] of FT_Short;
+
+    metric_Data_Format: FT_Short;
+    number_Of_HMetrics: FT_UShort;
+
+    long_metrics: Pointer;
+    short_metrics: Pointer;
+  end;
+
   TFT_Init_FreeType = function(aLibrary: PFT_Library): FT_Error;
   TFT_Done_FreeType = function(aLibrary: FT_Library): FT_Error;
   TFT_New_Face      = function(aLibrary: FT_Library; const aFilename: PAnsiChar; aFaceIndex: FT_Long; aFace: PFT_Face): FT_Error;
@@ -241,8 +334,9 @@ type
   TFT_Get_Sfnt_Name_Count = function(aFace: FT_Face): FT_UInt;
   TFT_Get_Sfnt_Name       = function(aFace: FT_Face; aIndex: FT_UInt; aName: PFT_SfntName): FT_Error;
 
-  TFT_Set_Char_Size = function(aFace: FT_Face; aCharWidth: FT_F26Dot6; aCharHeight: FT_F26Dot6; aHorzDPI: FT_UInt; aVertDPI: FT_UInt): FT_Error;
-  TFT_Load_Char = function(aFace: FT_Face; aCharCode: FT_ULong; aLoadFlags: FT_Int32): FT_Error;
+  TFT_Set_Char_Size  = function(aFace: FT_Face; aCharWidth: FT_F26Dot6; aCharHeight: FT_F26Dot6; aHorzDPI: FT_UInt; aVertDPI: FT_UInt): FT_Error;
+  TFT_Load_Char      = function(aFace: FT_Face; aCharCode: FT_ULong; aLoadFlags: FT_Int32): FT_Error;
+  TFT_Get_Sfnt_Table = function(aFace: FT_Face; aTag: Integer): Pointer;
 
 var
   FT_Init_FreeType: TFT_Init_FreeType;
@@ -253,8 +347,9 @@ var
   FT_Get_Sfnt_Name_Count: TFT_Get_Sfnt_Name_Count;
   FT_Get_Sfnt_Name:       TFT_Get_Sfnt_Name;
 
-  FT_Set_Char_Size: TFT_Set_Char_Size;
-  FT_Load_Char:     TFT_Load_Char;
+  FT_Set_Char_Size:   TFT_Set_Char_Size;
+  FT_Load_Char:       TFT_Load_Char;
+  FT_Get_Sfnt_Table:  TFT_Get_Sfnt_Table;
 
 const
   TT_NAME_ID_COPYRIGHT          = 0;
@@ -486,6 +581,14 @@ const
   FT_LOAD_TARGET_LCD    = FT_RENDER_MODE_LCD    shl 16;
   FT_LOAD_TARGET_LCD_V  = FT_RENDER_MODE_LCD_V  shl 16;
 
+  FT_SFNT_HEAD  = 0;
+  FT_SFNT_MAXP  = 1;
+  FT_SFNT_OS2   = 2;
+  FT_SFNT_HHEA  = 3;
+  FT_SFNT_VHEA  = 4;
+  FT_SFNT_POST  = 5;
+  FT_SFNT_PCLT  = 6;
+
 function InitFreeType: FT_Library;
 procedure QuitFreeType;
 
@@ -553,8 +656,9 @@ begin
     FT_Get_Sfnt_Name_Count := TFT_Get_Sfnt_Name_Count(GetProcAddr('FT_Get_Sfnt_Name_Count'));
     FT_Get_Sfnt_Name       := TFT_Get_Sfnt_Name(      GetProcAddr('FT_Get_Sfnt_Name'));
 
-    FT_Set_Char_Size := TFT_Set_Char_Size(GetProcAddr('FT_Set_Char_Size'));
-    FT_Load_Char     := TFT_Load_Char(    GetProcAddr('FT_Load_Char'));
+    FT_Set_Char_Size  := TFT_Set_Char_Size( GetProcAddr('FT_Set_Char_Size'));
+    FT_Load_Char      := TFT_Load_Char(     GetProcAddr('FT_Load_Char'));
+    FT_Get_Sfnt_Table := TFT_Get_Sfnt_Table(GetProcAddr('FT_Get_Sfnt_Table'));
 
     err := FT_Init_FreeType(@ftLibrary);
     if (err <> 0) then

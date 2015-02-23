@@ -49,7 +49,6 @@
       <Unit2>
         <Filename Value="..\..\utsRendererOpenGL.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="utsRendererOpenGL"/>
       </Unit2>
       <Unit3>
         <Filename Value="..\..\utsTextSuite.pas"/>
@@ -68,7 +67,6 @@
       <Unit6>
         <Filename Value="..\..\utsUtils.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="utsUtils"/>
       </Unit6>
       <Unit7>
         <Filename Value="..\..\utsFontCreatorGDI.pas"/>
@@ -78,12 +76,10 @@
       <Unit8>
         <Filename Value="..\..\utsCodePages.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="utsCodePages"/>
       </Unit8>
       <Unit9>
         <Filename Value="..\..\utsPostProcess.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="utsPostProcess"/>
       </Unit9>
       <Unit10>
         <Filename Value="..\..\utsFontCreatorFreeType.pas"/>

@@ -41,8 +41,8 @@ type
     procedure GetCharImage(const aFont: TtsFont; const aCharCode: WideChar;
       const aCharImage: TtsImage); override;
   public
-    function GetFontByFile(const aFilename: String; const aRenderer: TtsRenderer;
-      const aSize: Integer; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload;
+    function GetFontByFile(const aFilename: String; const aRenderer: TtsRenderer; const aSize: Integer;
+      const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload;
 
     constructor Create(const aContext: TtsContext);
     destructor Destroy; override;
@@ -299,11 +299,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function TtsFontGeneratorFreeType.GetFontByFile(const aFilename: String; const aRenderer: TtsRenderer;
-  const aSize: Integer; const aAntiAliasing: TtsAntiAliasing): TtsFont;
+  const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont;
 var
   face: FT_Face;
   err: FT_Error;
   prop: TtsFontProperties;
+  os2: PTT_OS2;
+  hz: PTT_HoriHeader;
 begin
   err := FT_New_Face(fHandle, PAnsiChar(aFilename), 0, @face);
   if (err <> 0) then
@@ -322,21 +324,30 @@ begin
   prop.Size         := aSize;
   prop.AntiAliasing := aAntiAliasing;
   prop.DefaultChar  := '?';
-  prop.Style        := [];
-  if ((face^.style_flags and FT_STYLE_FLAG_BOLD) <> 0) then
-    Include(prop.Style, tsStyleBold);
-  if ((face^.style_flags and FT_STYLE_FLAG_ITALIC) <> 0) then
-    Include(prop.Style, tsStyleItalic);
+  prop.Style        := aStyle + [tsStyleBold, tsStyleItalic];
+  if ((face^.style_flags and FT_STYLE_FLAG_BOLD) = 0) then
+    Exclude(prop.Style, tsStyleBold);
+  if ((face^.style_flags and FT_STYLE_FLAG_ITALIC) = 0) then
+    Exclude(prop.Style, tsStyleItalic);
 
   prop.Ascent           :=  face^.size^.metrics.ascender  div FT_SIZE_FACTOR;
   prop.Descent          := -face^.size^.metrics.descender div FT_SIZE_FACTOR;
   prop.ExternalLeading  := 0;
   prop.BaseLineOffset   := 0;
 
-  prop.UnderlinePos   := face^.underline_position  div FT_SIZE_FACTOR;
-  prop.UnderlineSize  := face^.underline_thickness div FT_SIZE_FACTOR;
-  prop.StrikeoutPos   := 0;
-  prop.StrikeoutSize  := 0;
+  prop.UnderlinePos  := face^.underline_position  div FT_SIZE_FACTOR;
+  prop.UnderlineSize := face^.underline_thickness div FT_SIZE_FACTOR;
+
+  os2 := PTT_OS2(FT_Get_Sfnt_Table(face, FT_SFNT_OS2));
+  if Assigned(os2) and (os2^.version <> $FFFF) then begin
+    prop.StrikeoutPos  := os2^.yStrikeoutPosition div FT_SIZE_FACTOR;
+    prop.StrikeoutSize := os2^.yStrikeoutSize     div FT_SIZE_FACTOR;
+  end;
+
+  hz := PTT_HoriHeader(FT_Get_Sfnt_Table(face, FT_SFNT_HHEA));
+  if Assigned(hz) then begin
+    prop.ExternalLeading := hz^.Line_Gap div FT_SIZE_FACTOR;
+  end;
 
   result := TtsFontFreeType.Create(TtsFreeTypeFaceHandle.Create(face), aRenderer, self, prop);
 end;

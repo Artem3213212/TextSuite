@@ -50,8 +50,8 @@ uses
   dglOpenGL;
 
 const
-  //TEST_STRING = 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.';
-  TEST_STRING = 'Lorem';
+  TEST_STRING = 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.';
+  //TEST_STRING = 'Lorem';
 
 procedure TMainForm.FormCreate(Sender: TObject);
 var
@@ -85,9 +85,9 @@ begin
   ftsGenerator.AddPostProcessStep(pp);
   }
   try
-    ftsFont1 := ftsGenerator.GetFontByFile('Calibri',    ftsRenderer, 25,  [tsStyleBold], tsAANormal);
-    ftsFont2 := ftsGenerator.GetFontByName('Calibri',    ftsRenderer, 20,  [], tsAANormal);
-    ftsFont3 := ftsFreeType.GetFontByFile('calibrib.ttf', ftsRenderer, 25, tsAANone);
+    ftsFont1 := ftsGenerator.GetFontByName('Calibri',    ftsRenderer, 25, [tsStyleUnderline], tsAANormal);
+    ftsFont2 := ftsGenerator.GetFontByName('Calibri',    ftsRenderer, 20, [], tsAANormal);
+    ftsFont3 := ftsFreeType.GetFontByFile('calibri.ttf', ftsRenderer, 25, [tsStyleUnderline], tsAANormal);
   except
     on e: EtsException do
       MessageDlg('Error', e.Message, mtError, [mbOK], 0);
@@ -154,11 +154,11 @@ begin
   {$ELSE}
   block := ftsRenderer.BeginBlock(0, 0, ClientWidth, ClientHeight, [tsBlockFlagWordWrap]);
   try
-    block.HorzAlign := tsHorzAlignJustify;
+    //block.HorzAlign := tsHorzAlignJustify;
 
     block.ChangeFont(ftsFont1);
-    block.ChangeColor(tsColor4f(1.0, 1.0, 1.0, 1.0));
-    block.TextOutW(TEST_STRING + sLineBreak);
+    block.ChangeColor(tsColor4f(1.0, 0.0, 0.0, 1.0));
+    block.TextOutA(TEST_STRING + sLineBreak);
 
     block.ChangeFont(ftsFont3);
     block.ChangeColor(tsColor4f(1.0, 1.0, 1.0, 1.0));
