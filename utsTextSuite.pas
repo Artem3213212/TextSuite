@@ -95,8 +95,6 @@ type
     procedure Blend(const aImage: TtsImage; const X, Y: Integer; const aFunc: TtsBlendFunc);
     procedure Blur(const aHorzKernel, aVertKernel: TtsKernel1D; const aChannelMask: TtsColorChannels);
 
-    procedure AddResizingBorder;
-
     constructor Create;
     destructor Destroy; override;
   end;
@@ -949,99 +947,6 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsImage.AddResizingBorder;
-var
-  c, cTmp, cSum: TtsColor4f;
-  x, y, cnt: Integer;
-  p, tmp: PByte;
-
-  procedure AddCol(const aColor: TtsColor4f);
-  var
-    i: Integer;
-  begin
-    if (aColor.a > 0) then begin
-      inc(cnt);
-      for i := 0 to 2 do
-        cSum.arr[i] := cSum.arr[i] + cTmp.arr[i];
-    end;
-  end;
-
-var
-  i: Integer;
-begin
-  Resize(Width + 4, Height + 4, 2, 2);
-  for y := 0 to Height-1 do begin
-    p := Scanline[y];
-    for x := 0 to Width-1 do begin
-      FillByte(cSum, SizeOf(cSum), 0);
-      cnt := 0;
-      tmp := p;
-      tsFormatUnmap(Format, tmp, c);
-      if (c.a = 0) then begin
-
-        // row - 1
-        if (y > 0) then begin
-
-          // row - 1 | col
-          GetPixelAt(x, y-1, cTmp);
-          AddCol(cTmp);
-
-          //row - 1 | col - 1
-          if (x > 0) then begin
-            GetPixelAt(x-1, y-1, cTmp);
-            AddCol(cTmp);
-          end;
-
-          // row - 1 | col + 1
-          if (x < Width-1) then begin
-            GetPixelAt(x+1, y-1, cTmp);
-            AddCol(cTmp);
-          end;
-        end;
-
-        // row + 1
-        if (y < Height-1) then begin
-          // row - 1 | col
-          GetPixelAt(x, y+1, cTmp);
-          AddCol(cTmp);
-
-          //row + 1 | col - 1
-          if (x > 0) then begin
-            GetPixelAt(x-1, y+1, cTmp);
-            AddCol(cTmp);
-          end;
-
-          // row + 1 | col + 1
-          if (x < Width-1) then begin
-            GetPixelAt(x+1, y+1, cTmp);
-            AddCol(cTmp);
-          end;
-        end;
-
-        //row | col - 1
-        if (x > 0) then begin
-          GetPixelAt(x-1, y+1, cTmp);
-          AddCol(cTmp);
-        end;
-
-        // row | col + 1
-        if (x < Width-1) then begin
-          GetPixelAt(x+1, y+1, cTmp);
-          AddCol(cTmp);
-        end;
-
-        // any pixel next to the transparent pixel they are opaque?
-        if (cnt > 0) then begin
-          for i := 0 to 2 do
-            c.arr[i] := cSum.arr[i] / cnt;
-        end;
-      end;
-      tsFormatMap(Format, p, c);
-    end;
-  end;
-end;
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 constructor TtsImage.Create;
 begin
   inherited Create;
@@ -1061,7 +966,11 @@ end;
 constructor TtsChar.Create(const aCharCode: WideChar);
 begin
   inherited Create;
-  fCharCode := aCharCode;
+  fCharCode     := aCharCode;
+  fGlyphOrigin  := tsPosition(0, 0);
+  fGlyphRect    := tsRect(0, 0, 0, 0);
+  fAdvance      := 0;
+  fRenderRef    := nil;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1077,13 +986,10 @@ function TtsFont.GetChar(const aCharCode: WideChar): TtsChar;
 var
   Chars: PtsFontCharArray;
 begin
-  if (Ord(aCharCode) > 0) then begin
-    Chars := fChars[(Ord(aCharCode) shr 8) and $FF];
-    if Assigned(Chars) then
-      result := Chars^.Chars[Ord(aCharCode) and $FF]
-    else
-      result := nil;
-  end else
+  Chars := fChars[(Ord(aCharCode) shr 8) and $FF];
+  if Assigned(Chars) then
+    result := Chars^.Chars[Ord(aCharCode) and $FF]
+  else
     result := nil;
 end;
 
@@ -1134,7 +1040,7 @@ end;
 function TtsFont.AddChar(const aCharCode: WideChar): TtsChar;
 begin
   result := GetChar(aCharCode);
-  if not Assigned(result) and fCreateChars and (Ord(aCharCode) > 0) then begin
+  if not Assigned(result) and fCreateChars then begin
     result := fGenerator.GenerateChar(aCharCode, self, fRenderer);
     if Assigned(result) then
       AddChar(aCharCode, result);
@@ -1487,18 +1393,18 @@ var
   CharImage: TtsImage;
 begin
   result := nil;
-  if (Ord(aCharCode) = 0) or
-     not GetGlyphMetrics(aFont, aCharCode, GlyphOrigin, GlyphSize, Advance) or
+  if not GetGlyphMetrics(aFont, aCharCode, GlyphOrigin, GlyphSize, Advance) or
      not ((GlyphOrigin.x <> 0) or (GlyphOrigin.y <> 0) or (GlyphSize.x <> 0) or (GlyphSize.y <> 0) or (Advance <> 0)) then
         exit;
 
   CharImage := TtsImage.Create;
   try
     if aRenderer.SaveImages then begin
-      if (GlyphSize.x > 0) and (GlyphSize.y > 0) then begin
+      if (GlyphSize.x > 0) and (GlyphSize.y > 0) then
         GetCharImage(aFont, aCharCode, CharImage);
-      end else if ([tsStyleUnderline, tsStyleStrikeout] * aFont.Properties.Style <> []) then begin
-        CharImage.CreateEmpty(aRenderer.Format, Advance, 1);
+
+      if CharImage.IsEmpty and ([tsStyleUnderline, tsStyleStrikeout] * aFont.Properties.Style <> []) then begin
+        CharImage.CreateEmpty(aRenderer.Format, max(Advance, 1), 1);
         GlyphOrigin.y := 1;
       end;
     end;

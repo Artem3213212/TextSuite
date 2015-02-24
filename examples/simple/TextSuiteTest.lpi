@@ -49,6 +49,7 @@
       <Unit2>
         <Filename Value="..\..\utsRendererOpenGL.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="utsRendererOpenGL"/>
       </Unit2>
       <Unit3>
         <Filename Value="..\..\utsTextSuite.pas"/>

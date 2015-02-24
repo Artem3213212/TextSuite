@@ -266,16 +266,16 @@ var
 
     // Text Coords
     result.TextureID      := aTexture^.ID;
-    result.TexCoordPos.x  := x / aTexture^.Size;
-    result.TexCoordPos.y  := y / aTexture^.Size;
+    result.TexCoordPos.x  :=                 x / aTexture^.Size;
+    result.TexCoordPos.y  :=                 y / aTexture^.Size;
     result.TexCoordSize.x := aCharImage.Width  / aTexture^.Size;
     result.TexCoordSize.y := aCharImage.Height / aTexture^.Size;
 
     // Vertex Coords
     result.VertexPos.x  := -aChar.GlyphRect.Left;
     result.VertexPos.y  := -aChar.GlyphRect.Top - aChar.GlyphOrigin.y;
-    result.VertexSize.x := aCharImage.Width;
-    result.VertexSize.y := aCharImage.Height;
+    result.VertexSize.x :=  aCharImage.Width;
+    result.VertexSize.y :=  aCharImage.Height;
 
     glBindTexture(GL_TEXTURE_2D, result.TextureID);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
@@ -444,24 +444,6 @@ end;
 procedure TtsRendererOpenGL.Render(const aCharRef: TtsCharRenderRef);
 var
   ref: TtsCharRenderRefOpenGL;
-
-  procedure RenderTreeItem(const aItem: PtsTextureTreeItem; const X1, Y1, X2, Y2: Integer);
-  begin
-    glBegin(GL_LINE_LOOP);
-      glVertex2f(X1, Y1);
-      glVertex2f(X2, Y1);
-      glVertex2f(X2, Y2);
-      glVertex2f(X1, Y2);
-    glEnd;
-    if (aItem^.value > 0) then begin
-      RenderTreeItem(aItem^.children[0], X1, Y1, X2, aItem^.value);
-      RenderTreeItem(aItem^.children[1], X1, aItem^.value, X2, Y2);
-    end else if (aItem^.value < 0) then begin
-      RenderTreeItem(aItem^.children[0], X1, Y1, -aItem^.value, Y2);
-      RenderTreeItem(aItem^.children[1], -aItem^.value, Y1, X2, Y2);
-    end;
-  end;
-
 begin
   if Assigned(aCharRef) and (aCharRef is TtsCharRenderRefOpenGL) then begin
     ref := (aCharRef as TtsCharRenderRefOpenGL);
