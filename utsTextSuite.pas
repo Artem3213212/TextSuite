@@ -321,7 +321,7 @@ type
 
     function GetRect: TtsRect;
 
-    function PushLineItem(const aItem: PtsLineItem; const aUpdateLineWidth: Boolean = true): Boolean;
+    function PushLineItem(const aItem: PtsLineItem): Boolean;
     procedure PushSpacing(const aWidth: Integer);
     procedure FreeLineItem(var aItem: PtsLineItem);
     procedure FreeLineItems(var aItem: PtsLineItem);
@@ -1499,7 +1499,7 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-function TtsTextBlock.PushLineItem(const aItem: PtsLineItem; const aUpdateLineWidth: Boolean): Boolean;
+function TtsTextBlock.PushLineItem(const aItem: PtsLineItem): Boolean;
 begin
   result := false;
   if not Assigned(fLastLine) then
@@ -1733,7 +1733,7 @@ begin
            (fLastLine^.meta.Width + p^.TextWidth > fWidth) then
         begin
           if (fLastLine^.meta.Width = 0) then begin
-            if not PushLineItem(p, false) then // if is first word, than add anyway
+            if not PushLineItem(p) then // if is first word, than add anyway
               FreeLineItem(p);
             p := nil;
           end;

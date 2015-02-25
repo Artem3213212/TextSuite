@@ -610,7 +610,7 @@ const
 {$ELSEIF DEFINED(TS_FT_WIN64)}
   LIB_FREE_TYPE = 'freetype6-x64.dll';
 {$ELSEIF DEFINED(TS_FT_LINUX)}
-  LIB_FREE_TYPE = ???
+  LIB_FREE_TYPE = 'libfreetype.so';
 {$ELSE}
   {$ERROR 'unknown/unsupported OS'}
 {$IFEND}

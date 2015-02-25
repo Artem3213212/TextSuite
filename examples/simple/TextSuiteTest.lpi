@@ -33,7 +33,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="13">
+    <Units Count="14">
       <Unit0>
         <Filename Value="TextSuiteTest.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -97,6 +97,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="utsFreeType"/>
       </Unit12>
+      <Unit13>
+        <Filename Value="..\..\utsOpenGLUtils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsOpenGLUtils"/>
+      </Unit13>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
