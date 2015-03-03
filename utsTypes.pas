@@ -159,6 +159,9 @@ type
   end;
   PtsColor4ub = ^TtsColor4ub;
 
+  TtsVector4f = array[0..3] of Single;
+  TtsMatrix4f = array[0..3] of TtsVector4f;
+
   TtsTextMetric = packed record
     Ascent: Integer;
     Descent: Integer;
@@ -179,10 +182,15 @@ const
   TS_MODES_MODULATE_ALL:   TtsImageModes = (tsModeModulate, tsModeModulate, tsModeModulate, tsModeModulate);
   TS_MODES_MODULATE_ALPHA: TtsImageModes = (tsModeReplace,  tsModeReplace,  tsModeReplace,  tsModeModulate);
 
+  TS_MATRIX_IDENTITY: TtsMatrix4f = ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1));
+
 function tsColor4f(r, g, b, a: Single): TtsColor4f;
 function tsModes(r, g, b, a: TtsImageMode): TtsImageModes;
 function tsRect(const l, t, r, b: Integer): TtsRect;
 function tsPosition(const x, y: Integer): TtsPosition;
+function tsPositionF(const x, y: Single): TtsPositionF;
+function tsVector4f(X, Y, Z, W: Single): TtsVector4f;
+function tsMatrix4f(X, Y, Z, P: TtsVector4f): TtsMatrix4f;
 
 function  tsFormatSize(const aFormat: TtsFormat): Integer;
 procedure tsFormatMap(const aFormat: TtsFormat; var aData: PByte; const aColor: TtsColor4f);
@@ -233,6 +241,31 @@ function tsPosition(const x, y: Integer): TtsPosition;
 begin
   result.x := x;
   result.y := y;
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function tsPositionF(const x, y: Single): TtsPositionF;
+begin
+  result.x := x;
+  result.y := y;
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function tsVector4f(X, Y, Z, W: Single): TtsVector4f;
+begin
+  result[0] := X;
+  result[1] := Y;
+  result[2] := Z;
+  result[3] := W;
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function tsMatrix4f(X, Y, Z, P: TtsVector4f): TtsMatrix4f;
+begin
+  result[0] := X;
+  result[1] := Y;
+  result[2] := Z;
+  result[3] := P;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

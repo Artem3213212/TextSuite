@@ -5,19 +5,16 @@ unit utsOpenGLUtils;
 interface
 
 uses
-  Classes, SysUtils, syncobjs,
+  Classes, SysUtils,
   utsTextSuite, utsTypes;
 
 type
-  TtsQuadPosF = array[0..3] of TtsPositionF;
   TtsCharRenderRefOpenGL = class(TtsCharRenderRef)
   public
     TextureID: Integer;         // ID of OpenGL texture where the char is stored in
-    TexCoordSize: TtsPositionF; // size of the char in texture coords (0.0 - 1.0)
-    TexCoordPos: TtsPositionF;  // position of the char in texture coords (0.0 - 1.0)
-    VertexSize: TtsPositionF;   // size of the char in world coords
-    VertexPos: TtsPositionF;    // size of the char in world coords
-
+    Size: TtsPosition;
+    TexMat: TtsMatrix4f;
+    VertMat: TtsMatrix4f;
     constructor Create;
   end;
 
@@ -61,9 +58,8 @@ type
 
     function  CreateNewTexture: PtsFontTexture; virtual;
     procedure FreeTexture(var aTexture: PtsFontTexture); virtual;
-    procedure UploadTexData(const aCharRef: TtsCharRenderRefOpenGL;
-      const aCharImage: TtsImage; const X, Y: Integer); virtual;
 
+    procedure UploadTexData(const aCharRef: TtsCharRenderRefOpenGL; const aCharImage: TtsImage; const X, Y: Integer); virtual;
   protected
     function  CreateRenderRef(const aChar: TtsChar; const aCharImage: TtsImage): TtsCharRenderRef; override;
     procedure FreeRenderRef(const aCharRef: TtsCharRenderRef); override;
@@ -92,10 +88,9 @@ constructor TtsCharRenderRefOpenGL.Create;
 begin
   inherited Create;
   TextureID := 0;
-  FillByte(TexCoordPos,  SizeOf(TexCoordPos),  0);
-  FillByte(TexCoordSize, SizeOf(TexCoordSize), 0);
-  FillByte(VertexPos,    SizeOf(VertexPos),    0);
-  FillByte(VertexSize,   SizeOf(VertexSize),   0);
+  FillByte(TexMat,  SizeOf(TexMat),  0);
+  FillByte(VertMat, SizeOf(VertMat), 0);
+  FillByte(Size,    SizeOf(Size),    0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -152,8 +147,7 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsBaseOpenGL.UploadTexData(const aCharRef: TtsCharRenderRefOpenGL;
-  const aCharImage: TtsImage; const X, Y: Integer);
+procedure TtsBaseOpenGL.UploadTexData(const aCharRef: TtsCharRenderRefOpenGL; const aCharImage: TtsImage; const X, Y: Integer);
 begin
   // DUMMY
 end;
@@ -211,21 +205,22 @@ var
     item := InsertToTree(aTexture^.Usage, 0, 0, aTexture^.Size, aTexture^.Size, x, y);
     if not Assigned(item) then
       raise EtsRendererOpenGL.Create('unable to add glyph to texture');
+
     item^.ref := TtsCharRenderRefOpenGL.Create;
     result    := item^.ref;
 
-    // Text Coords
-    result.TextureID      := aTexture^.ID;
-    result.TexCoordPos.x  :=                 x / aTexture^.Size;
-    result.TexCoordPos.y  :=                 y / aTexture^.Size;
-    result.TexCoordSize.x := aCharImage.Width  / aTexture^.Size;
-    result.TexCoordSize.y := aCharImage.Height / aTexture^.Size;
-
-    // Vertex Coords
-    result.VertexPos.x  := -aChar.GlyphRect.Left;
-    result.VertexPos.y  := -aChar.GlyphRect.Top - aChar.GlyphOrigin.y;
-    result.VertexSize.x :=  aCharImage.Width;
-    result.VertexSize.y :=  aCharImage.Height;
+    result.TextureID := aTexture^.ID;
+    result.Size      := tsPosition(aCharImage.Width, aCharImage.Height);
+    result.TexMat := tsMatrix4f(
+      tsVector4f(aCharImage.Width  / aTexture^.Size, 0.0, 0.0, 0.0),
+      tsVector4f(0.0, aCharImage.Height / aTexture^.Size, 0.0, 0.0),
+      tsVector4f(0.0,                                0.0, 1.0, 0.0),
+      tsVector4f(x / aTexture^.Size,  y / aTexture^.Size, 0.0, 1.0));
+    result.VertMat := tsMatrix4f(
+      tsVector4f(aCharImage.Width, 0.0, 0.0, 0.0),
+      tsVector4f(0.0, aCharImage.Height, 0.0, 0.0),
+      tsVector4f(0.0, 0.0, 1.0, 0.0),
+      tsVector4f(-aChar.GlyphRect.Left, -aChar.GlyphRect.Top - aChar.GlyphOrigin.y, 0.0, 1.0));
 
     UploadTexData(result, aCharImage, x, y);
   end;
@@ -281,8 +276,8 @@ var
     w := X2 - X1;
     h := Y2 - Y1;
     if not Assigned(aItem) or
-       (w < ref.VertexSize.x) or
-       (h < ref.VertexSize.y) then
+       (w < ref.Size.x) or
+       (h < ref.Size.y) then
           exit;
 
     result := (aItem^.ref = ref);

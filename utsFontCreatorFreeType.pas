@@ -5,7 +5,7 @@ unit utsFontCreatorFreeType;
 interface
 
 uses
-  Classes, SysUtils, syncobjs, dynlibs,
+  Classes, SysUtils,
   utsTextSuite, utsTypes, utsFreeType;
 
 type
@@ -315,7 +315,7 @@ begin
   if (err <> 0) then
     raise EtsException.Create('unable to set char size: error=' + IntToStr(err));
 
-  FillByte(prop, SizeOf(prop), 0);
+  FillByte(prop{%H-}, SizeOf(prop), 0);
   prop.AntiAliasing := tsAANormal;
   prop.FaceName     := face^.family_name;
   prop.StyleName    := face^.style_name;

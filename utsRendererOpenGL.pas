@@ -184,13 +184,11 @@ begin
     glMatrixMode(GL_TEXTURE);
     glPushMatrix;
     glLoadIdentity;
-    glTranslatef(ref.TexCoordPos.x, ref.TexCoordPos.y, 0);
-    glScalef(ref.TexCoordSize.x, ref.TexCoordSize.y, 1);
+    glMultMatrixf(@ref.TexMat[0, 0]);
 
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix;
-    glTranslatef(ref.VertexPos.x, ref.VertexPos.y, 0);
-    glScalef(ref.VertexSize.x, ref.VertexSize.y, 1);
+    glMultMatrixf(@ref.VertMat[0, 0]);
 
     glBindBuffer(GL_ARRAY_BUFFER, fVBO);
     glEnableClientState(GL_VERTEX_ARRAY);

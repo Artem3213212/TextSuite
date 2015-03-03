@@ -4,7 +4,7 @@
     <PathDelim Value="\"/>
     <Version Value="9"/>
     <BuildModes Active="Default"/>
-    <Units Count="65">
+    <Units Count="67">
       <Unit0>
         <Filename Value="TextSuiteTest.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -18,7 +18,6 @@
         <ComponentName Value="MainForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="uMainForm"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="140"/>
         <CursorPos X="59" Y="154"/>
@@ -28,8 +27,10 @@
         <Filename Value="..\..\utsRendererOpenGL.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="utsRendererOpenGL"/>
-        <TopLine Value="48"/>
-        <CursorPos X="36" Y="65"/>
+        <IsVisibleTab Value="True"/>
+        <WindowIndex Value="1"/>
+        <TopLine Value="171"/>
+        <CursorPos Y="187"/>
         <UsageCount Value="70"/>
         <Loaded Value="True"/>
       </Unit2>
@@ -37,10 +38,8 @@
         <Filename Value="..\..\utsTextSuite.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="utsTextSuite"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="310"/>
-        <CursorPos X="51" Y="324"/>
+        <TopLine Value="216"/>
+        <CursorPos X="55" Y="316"/>
         <UsageCount Value="70"/>
         <Loaded Value="True"/>
       </Unit3>
@@ -54,10 +53,11 @@
         <Filename Value="..\..\utsTypes.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="utsTypes"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="93"/>
-        <CursorPos X="5" Y="109"/>
+        <EditorIndex Value="4"/>
+        <TopLine Value="173"/>
+        <CursorPos X="59" Y="191"/>
         <UsageCount Value="70"/>
+        <Loaded Value="True"/>
       </Unit5>
       <Unit6>
         <Filename Value="..\..\utsUtils.pas"/>
@@ -70,10 +70,8 @@
       <Unit7>
         <Filename Value="..\..\utsFontCreatorGDI.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="utsFontCreatorGDI"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="-1"/>
-        <WindowIndex Value="1"/>
+        <WindowIndex Value="-1"/>
         <TopLine Value="517"/>
         <CursorPos Y="526"/>
         <UsageCount Value="70"/>
@@ -97,7 +95,6 @@
       <Unit10>
         <Filename Value="..\..\utsFontCreatorFreeType.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="utsFontCreatorFreeType"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="237"/>
         <CursorPos X="51" Y="339"/>
@@ -106,7 +103,6 @@
       <Unit11>
         <Filename Value="..\..\utsGDI.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="utsGDI"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="284"/>
@@ -116,7 +112,6 @@
       <Unit12>
         <Filename Value="..\..\utsFreeType.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="utsFreeType"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="292"/>
@@ -124,13 +119,33 @@
         <UsageCount Value="46"/>
       </Unit12>
       <Unit13>
+        <Filename Value="..\..\utsOpenGLUtils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsOpenGLUtils"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="206"/>
+        <CursorPos X="40" Y="220"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
+      </Unit13>
+      <Unit14>
+        <Filename Value="..\..\utsRendererOpenGLES.pas"/>
+        <UnitName Value="utsRendererOpenGLES"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="172"/>
+        <CursorPos Y="12"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit14>
+      <Unit15>
         <Filename Value="new\utsTextSuite.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1886"/>
         <CursorPos X="33" Y="1904"/>
         <UsageCount Value="89"/>
-      </Unit13>
-      <Unit14>
+      </Unit15>
+      <Unit16>
         <Filename Value="old\TextSuite.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
@@ -143,237 +158,236 @@
           <CursorPos X="3" Y="302"/>
         </ExtraEditor1>
         <UsageCount Value="84"/>
-      </Unit14>
-      <Unit15>
+      </Unit16>
+      <Unit17>
         <Filename Value="old\TextSuiteImports.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="656"/>
         <CursorPos X="20" Y="635"/>
         <UsageCount Value="84"/>
-      </Unit15>
-      <Unit16>
+      </Unit17>
+      <Unit18>
         <Filename Value="old\TextSuiteWideUtils.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="1243"/>
         <CursorPos X="18" Y="1257"/>
         <UsageCount Value="84"/>
-      </Unit16>
-      <Unit17>
+      </Unit18>
+      <Unit19>
         <Filename Value="old\TextSuiteClasses.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="654"/>
         <CursorPos X="25" Y="673"/>
         <UsageCount Value="84"/>
-      </Unit17>
-      <Unit18>
+      </Unit19>
+      <Unit20>
         <Filename Value="old\TextSuitePostProcess.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="163"/>
         <CursorPos X="61" Y="141"/>
         <UsageCount Value="84"/>
-      </Unit18>
-      <Unit19>
+      </Unit20>
+      <Unit21>
         <Filename Value="old\TextSuiteTTFUtils.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="83"/>
         <CursorPos X="3" Y="91"/>
         <UsageCount Value="84"/>
-      </Unit19>
-      <Unit20>
+      </Unit21>
+      <Unit22>
         <Filename Value="old\TextSuiteVersion.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
         <UsageCount Value="84"/>
-      </Unit20>
-      <Unit21>
+      </Unit22>
+      <Unit23>
         <Filename Value="new\utsFontCreatorGDI.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="655"/>
         <CursorPos X="53" Y="662"/>
         <UsageCount Value="48"/>
-      </Unit21>
-      <Unit22>
+      </Unit23>
+      <Unit24>
         <Filename Value="new\utsTtfUtils.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="128"/>
         <CursorPos X="17" Y="144"/>
         <UsageCount Value="40"/>
-      </Unit22>
-      <Unit23>
+      </Unit24>
+      <Unit25>
         <Filename Value="new\utsTypes.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="152"/>
         <CursorPos X="5" Y="168"/>
         <UsageCount Value="40"/>
-      </Unit23>
-      <Unit24>
+      </Unit25>
+      <Unit26>
         <Filename Value="new\utsUtils.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="20"/>
         <UsageCount Value="40"/>
-      </Unit24>
-      <Unit25>
+      </Unit26>
+      <Unit27>
         <Filename Value="new\utsRendererOpenGL.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="356"/>
         <CursorPos X="20" Y="376"/>
         <UsageCount Value="37"/>
-      </Unit25>
-      <Unit26>
+      </Unit27>
+      <Unit28>
         <Filename Value="..\bitSpace\_projects\MassiveUniverseOnline\bitSpaceEngine\src\OpenGLCore\uglcTypes.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="261"/>
         <CursorPos X="3" Y="277"/>
         <UsageCount Value="35"/>
-      </Unit26>
-      <Unit27>
+      </Unit28>
+      <Unit29>
         <Filename Value="..\bitSpace\_projects\MassiveUniverseOnline\bitSpaceEngine\src\OpenGLCore\dglOpenGL.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1066"/>
         <CursorPos X="27" Y="1082"/>
         <UsageCount Value="30"/>
-      </Unit27>
-      <Unit28>
+      </Unit29>
+      <Unit30>
         <Filename Value="new\uglctextsuite.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="3" Y="13"/>
         <UsageCount Value="11"/>
-      </Unit28>
-      <Unit29>
+      </Unit30>
+      <Unit31>
         <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\inc\ustringh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="113"/>
         <CursorPos X="10" Y="129"/>
         <UsageCount Value="38"/>
-      </Unit29>
-      <Unit30>
+      </Unit31>
+      <Unit32>
         <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\inc\ustrings.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2091"/>
         <CursorPos X="5" Y="2098"/>
         <UsageCount Value="21"/>
-      </Unit30>
-      <Unit31>
+      </Unit32>
+      <Unit33>
         <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\inc\systemh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="502"/>
         <CursorPos X="3" Y="518"/>
         <UsageCount Value="36"/>
-      </Unit31>
-      <Unit32>
+      </Unit33>
+      <Unit34>
         <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\inc\heaph.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="71"/>
         <CursorPos X="10" Y="95"/>
         <UsageCount Value="24"/>
-      </Unit32>
-      <Unit33>
+      </Unit34>
+      <Unit35>
         <Filename Value="old\TextSuiteCPUUtils.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <CursorPos X="23" Y="20"/>
         <UsageCount Value="14"/>
-      </Unit33>
-      <Unit34>
+      </Unit35>
+      <Unit36>
         <Filename Value="..\glBitmap\glBitmap\glBitmap.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="14" Y="14"/>
         <UsageCount Value="2"/>
-      </Unit34>
-      <Unit35>
+      </Unit36>
+      <Unit37>
         <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\objpas\math.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1011"/>
         <CursorPos X="47" Y="1015"/>
         <UsageCount Value="6"/>
-      </Unit35>
-      <Unit36>
+      </Unit37>
+      <Unit38>
         <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\inc\mathh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="84"/>
         <CursorPos X="14" Y="101"/>
         <UsageCount Value="6"/>
-      </Unit36>
-      <Unit37>
+      </Unit38>
+      <Unit39>
         <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\inc\genmath.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="152"/>
         <CursorPos X="10" Y="155"/>
         <UsageCount Value="6"/>
-      </Unit37>
-      <Unit38>
+      </Unit39>
+      <Unit40>
         <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\inc\dynlibs.pas"/>
-        <UnitName Value="dynlibs"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="143"/>
         <CursorPos X="3" Y="149"/>
         <UsageCount Value="30"/>
-      </Unit38>
-      <Unit39>
+      </Unit40>
+      <Unit41>
         <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\win\dynlibs.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="26"/>
         <CursorPos X="10" Y="42"/>
         <UsageCount Value="28"/>
-      </Unit39>
-      <Unit40>
+      </Unit41>
+      <Unit42>
         <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\win\sysosh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="11"/>
         <CursorPos X="3" Y="19"/>
         <UsageCount Value="11"/>
-      </Unit40>
-      <Unit41>
+      </Unit42>
+      <Unit43>
         <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\inc\objpash.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="177"/>
         <CursorPos X="22" Y="195"/>
         <UsageCount Value="15"/>
-      </Unit41>
-      <Unit42>
+      </Unit43>
+      <Unit44>
         <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\objpas\sysutils\sysunih.inc"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="25"/>
         <CursorPos X="34" Y="43"/>
         <UsageCount Value="26"/>
-      </Unit42>
-      <Unit43>
+      </Unit44>
+      <Unit45>
         <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\packages\fcl-base\src\syncobjs.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="113"/>
         <CursorPos X="25" Y="115"/>
         <UsageCount Value="16"/>
-      </Unit43>
-      <Unit44>
+      </Unit45>
+      <Unit46>
         <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\objpas\classes\classesh.inc"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="311"/>
         <CursorPos X="14" Y="327"/>
         <UsageCount Value="23"/>
-      </Unit44>
-      <Unit45>
+      </Unit46>
+      <Unit47>
         <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\inc\objpas.inc"/>
         <EditorIndex Value="-1"/>
         <UsageCount Value="29"/>
-      </Unit45>
-      <Unit46>
+      </Unit47>
+      <Unit48>
         <Filename Value="C:\Zusatzprogramme\Lazarus\lcl\include\control.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2843"/>
         <CursorPos Y="2858"/>
         <UsageCount Value="13"/>
-      </Unit46>
-      <Unit47>
+      </Unit48>
+      <Unit49>
         <Filename Value="C:\Users\Erik\Desktop\RectPacking\unit1.pas"/>
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
@@ -383,252 +397,249 @@
         <TopLine Value="376"/>
         <CursorPos X="74" Y="397"/>
         <UsageCount Value="21"/>
-      </Unit47>
-      <Unit48>
+      </Unit49>
+      <Unit50>
         <Filename Value="..\bitSpace\_projects\MassiveUniverseOnline\bitSpaceEngine\src\OpenGLCore\uglcArrayBuffer.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="102"/>
         <CursorPos X="37" Y="112"/>
         <UsageCount Value="10"/>
-      </Unit48>
-      <Unit49>
+      </Unit50>
+      <Unit51>
         <Filename Value="..\bitSpace\_projects\MassiveUniverseOnline\bitSpaceEngine\src\OpenGLCore\uglcBitmap.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="1047"/>
         <CursorPos X="15" Y="1043"/>
         <UsageCount Value="8"/>
-      </Unit49>
-      <Unit50>
+      </Unit51>
+      <Unit52>
         <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\objpas\objpas.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="19"/>
         <CursorPos X="8" Y="35"/>
         <UsageCount Value="8"/>
-      </Unit50>
-      <Unit51>
+      </Unit52>
+      <Unit53>
         <Filename Value="C:\Zusatzprogramme\Lazarus\lcl\include\application.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="966"/>
         <CursorPos Y="981"/>
         <UsageCount Value="8"/>
-      </Unit51>
-      <Unit52>
+      </Unit53>
+      <Unit54>
         <Filename Value="..\bitSpace\_projects\MassiveUniverseOnline\bitSpaceEngine\src\SpaceEngine\uengFrameLimiter.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="14"/>
         <CursorPos X="13" Y="14"/>
         <UsageCount Value="8"/>
-      </Unit52>
-      <Unit53>
+      </Unit54>
+      <Unit55>
         <Filename Value="..\..\old\TextSuiteClasses.pas"/>
-        <UnitName Value="TextSuiteClasses"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="2705"/>
         <CursorPos X="3" Y="2698"/>
         <UsageCount Value="18"/>
-      </Unit53>
-      <Unit54>
+      </Unit55>
+      <Unit56>
         <Filename Value="..\..\old\TextSuite.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="29"/>
         <CursorPos X="3" Y="45"/>
         <UsageCount Value="14"/>
-      </Unit54>
-      <Unit55>
+      </Unit56>
+      <Unit57>
         <Filename Value="..\..\old\TextSuiteWideUtils.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="1362"/>
         <CursorPos X="3" Y="1390"/>
         <UsageCount Value="14"/>
-      </Unit55>
-      <Unit56>
+      </Unit57>
+      <Unit58>
         <Filename Value="..\..\utsWideStringUtils.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="9"/>
         <UsageCount Value="18"/>
-      </Unit56>
-      <Unit57>
-        <Filename Value="..\..\old\TextSuiteCPUUtils.pas"/>
-        <EditorIndex Value="-1"/>
-        <WindowIndex Value="1"/>
-        <UsageCount Value="13"/>
-      </Unit57>
-      <Unit58>
-        <Filename Value="..\..\old\TextSuiteImports.pas"/>
-        <EditorIndex Value="-1"/>
-        <WindowIndex Value="1"/>
-        <CursorPos X="41" Y="12"/>
-        <UsageCount Value="13"/>
       </Unit58>
       <Unit59>
-        <Filename Value="..\..\old\TextSuiteOptions.inc"/>
+        <Filename Value="..\..\old\TextSuiteCPUUtils.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <UsageCount Value="13"/>
       </Unit59>
       <Unit60>
+        <Filename Value="..\..\old\TextSuiteImports.pas"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="1"/>
+        <CursorPos X="41" Y="12"/>
+        <UsageCount Value="13"/>
+      </Unit60>
+      <Unit61>
+        <Filename Value="..\..\old\TextSuiteOptions.inc"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="1"/>
+        <UsageCount Value="13"/>
+      </Unit61>
+      <Unit62>
         <Filename Value="..\..\old\TextSuitePostProcess.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="261"/>
         <CursorPos X="23" Y="345"/>
         <UsageCount Value="13"/>
-      </Unit60>
-      <Unit61>
+      </Unit62>
+      <Unit63>
         <Filename Value="..\..\old\TextSuiteTTFUtils.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <UsageCount Value="13"/>
-      </Unit61>
-      <Unit62>
+      </Unit63>
+      <Unit64>
         <Filename Value="..\..\old\TextSuiteVersion.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <UsageCount Value="13"/>
-      </Unit62>
-      <Unit63>
+      </Unit64>
+      <Unit65>
         <Filename Value="C:\Zusatzprogramme\Lazarus\fpc\2.7.1\source\rtl\win\wininc\unifun.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="53"/>
         <CursorPos X="22" Y="69"/>
         <UsageCount Value="26"/>
-      </Unit63>
-      <Unit64>
-        <Filename Value="..\..\utsOpenGLUtils.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="utsOpenGLUtils"/>
+      </Unit65>
+      <Unit66>
+        <Filename Value="..\..\..\dglOpenGLES\dglOpenGLES.pas"/>
+        <UnitName Value="dglOpenGLES"/>
         <EditorIndex Value="2"/>
-        <TopLine Value="297"/>
-        <CursorPos X="31" Y="382"/>
-        <UsageCount Value="21"/>
+        <TopLine Value="64"/>
+        <CursorPos X="48" Y="74"/>
+        <UsageCount Value="10"/>
         <Loaded Value="True"/>
-      </Unit64>
+      </Unit66>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="24" Column="57" TopLine="5"/>
+        <Filename Value="..\..\utsRendererOpenGLES.pas"/>
+        <Caret Line="17" Column="22" TopLine="5"/>
       </Position1>
       <Position2>
-        <Filename Value="..\..\utsOpenGLUtils.pas"/>
-        <Caret Line="327" TopLine="317"/>
+        <Filename Value="..\..\..\dglOpenGLES\dglOpenGLES.pas"/>
       </Position2>
       <Position3>
-        <Filename Value="..\..\utsOpenGLUtils.pas"/>
-        <Caret Line="335" Column="17" TopLine="317"/>
+        <Filename Value="..\..\utsRendererOpenGL.pas"/>
+        <Caret Line="210" Column="38" TopLine="196"/>
       </Position3>
       <Position4>
-        <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="26" Column="60" TopLine="8"/>
+        <Filename Value="..\..\utsOpenGLUtils.pas"/>
+        <Caret Line="378" Column="31" TopLine="297"/>
       </Position4>
       <Position5>
         <Filename Value="..\..\utsOpenGLUtils.pas"/>
-        <Caret Line="69" Column="15" TopLine="54"/>
+        <Caret Line="21" Column="26" TopLine="5"/>
       </Position5>
       <Position6>
-        <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="27" Column="66" TopLine="10"/>
+        <Filename Value="..\..\utsOpenGLUtils.pas"/>
+        <Caret Line="54" TopLine="39"/>
       </Position6>
       <Position7>
         <Filename Value="..\..\utsOpenGLUtils.pas"/>
-        <Caret Line="55" TopLine="55"/>
+        <Caret Line="53" TopLine="41"/>
       </Position7>
       <Position8>
-        <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="177" TopLine="171"/>
+        <Filename Value="..\..\utsOpenGLUtils.pas"/>
+        <Caret Line="143" Column="120" TopLine="133"/>
       </Position8>
       <Position9>
-        <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="9" Column="52"/>
+        <Filename Value="..\..\utsOpenGLUtils.pas"/>
+        <Caret Line="74" Column="15" TopLine="63"/>
       </Position9>
       <Position10>
-        <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="17" Column="15"/>
+        <Filename Value="..\..\utsOpenGLUtils.pas"/>
+        <Caret Line="191" Column="5" TopLine="177"/>
       </Position10>
       <Position11>
         <Filename Value="..\..\utsOpenGLUtils.pas"/>
-        <Caret Line="55" Column="48" TopLine="39"/>
+        <Caret Line="132" Column="3" TopLine="128"/>
       </Position11>
       <Position12>
         <Filename Value="..\..\utsOpenGLUtils.pas"/>
-        <Caret Line="58" Column="59" TopLine="39"/>
+        <Caret Line="190" Column="24" TopLine="176"/>
       </Position12>
       <Position13>
-        <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="102" Column="18" TopLine="81"/>
+        <Filename Value="..\..\utsTypes.pas"/>
+        <Caret Line="186" Column="55" TopLine="170"/>
       </Position13>
       <Position14>
         <Filename Value="..\..\utsOpenGLUtils.pas"/>
-        <Caret Line="128" Column="30" TopLine="120"/>
+        <Caret Line="190" Column="24" TopLine="176"/>
       </Position14>
       <Position15>
-        <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="102" Column="18" TopLine="81"/>
+        <Filename Value="..\..\utsOpenGLUtils.pas"/>
+        <Caret Line="192" Column="7" TopLine="174"/>
       </Position15>
       <Position16>
-        <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="19" Column="119" TopLine="3"/>
+        <Filename Value="..\..\utsOpenGLUtils.pas"/>
+        <Caret Line="194" Column="45" TopLine="178"/>
       </Position16>
       <Position17>
         <Filename Value="..\..\utsOpenGLUtils.pas"/>
-        <Caret Line="63" Column="7" TopLine="46"/>
+        <Caret Line="53" TopLine="9"/>
       </Position17>
       <Position18>
         <Filename Value="..\..\utsOpenGLUtils.pas"/>
-        <Caret Line="153" Column="29" TopLine="137"/>
+        <Caret Line="198" Column="12" TopLine="187"/>
       </Position18>
       <Position19>
-        <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="20" Column="7" TopLine="3"/>
+        <Filename Value="..\..\utsOpenGLUtils.pas"/>
+        <Caret Line="207" Column="7" TopLine="187"/>
       </Position19>
       <Position20>
-        <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="122" Column="41" TopLine="106"/>
+        <Filename Value="..\..\utsOpenGLUtils.pas"/>
+        <Caret Line="205" Column="22" TopLine="189"/>
       </Position20>
       <Position21>
-        <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="22" Column="15" TopLine="6"/>
+        <Filename Value="..\..\utsOpenGLUtils.pas"/>
+        <Caret Line="216" TopLine="192"/>
       </Position21>
       <Position22>
-        <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="137" Column="27" TopLine="121"/>
+        <Filename Value="..\..\utsOpenGLUtils.pas"/>
+        <Caret Line="207" Column="71" TopLine="193"/>
       </Position22>
       <Position23>
-        <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="170" Column="15" TopLine="154"/>
+        <Filename Value="..\..\utsOpenGLUtils.pas"/>
+        <Caret Line="274" Column="17" TopLine="259"/>
       </Position23>
       <Position24>
-        <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="227" TopLine="199"/>
+        <Filename Value="..\..\utsOpenGLUtils.pas"/>
+        <Caret Line="18" Column="5" TopLine="2"/>
       </Position24>
       <Position25>
         <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="30" Column="17" TopLine="15"/>
+        <Caret Line="75" Column="5" TopLine="73"/>
       </Position25>
       <Position26>
         <Filename Value="..\..\utsOpenGLUtils.pas"/>
-        <Caret Line="81" Column="34" TopLine="64"/>
+        <Caret Line="62" Column="67" TopLine="47"/>
       </Position26>
       <Position27>
         <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="211" Column="14" TopLine="200"/>
+        <Caret Line="19" Column="15" TopLine="3"/>
       </Position27>
       <Position28>
-        <Filename Value="..\..\utsRendererOpenGL.pas"/>
-        <Caret Line="74" Column="40" TopLine="53"/>
+        <Filename Value="..\..\..\dglOpenGLES\dglOpenGLES.pas"/>
+        <Caret Line="59" Column="33" TopLine="52"/>
       </Position28>
       <Position29>
-        <Filename Value="..\..\utsTextSuite.pas"/>
-        <Caret Line="973" TopLine="957"/>
+        <Filename Value="..\..\utsRendererOpenGL.pas"/>
+        <Caret Line="191" Column="39" TopLine="171"/>
       </Position29>
       <Position30>
-        <Filename Value="..\..\utsTextSuite.pas"/>
-        <Caret Line="1502" Column="61" TopLine="1496"/>
+        <Filename Value="..\..\utsOpenGLUtils.pas"/>
+        <Caret Line="225" Column="19" TopLine="206"/>
       </Position30>
     </JumpHistory>
   </ProjectSession>
