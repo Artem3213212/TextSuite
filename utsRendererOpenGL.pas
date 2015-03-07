@@ -25,7 +25,7 @@ type
     procedure SetDrawPos(const X, Y: Integer); override;
     procedure MoveDrawPos(const X, Y: Integer); override;
     procedure SetColor(const aColor: TtsColor4f); override;
-    procedure Render(const aCharRef: TtsCharRenderRef); override;
+    procedure Render(const aCharRef: TtsCharRenderRef; const aForcedWidth: Integer); override;
   public
     constructor Create(const aContext: TtsContext; const aFormat: TtsFormat);
     destructor Destroy; override;
@@ -171,9 +171,10 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsRendererOpenGL.Render(const aCharRef: TtsCharRenderRef);
+procedure TtsRendererOpenGL.Render(const aCharRef: TtsCharRenderRef; const aForcedWidth: Integer);
 var
   ref: TtsCharRenderRefOpenGL;
+  m: TtsMatrix4f;
 begin
   if Assigned(aCharRef) and (aCharRef is TtsCharRenderRefOpenGL) then begin
     ref := (aCharRef as TtsCharRenderRefOpenGL);
@@ -188,7 +189,12 @@ begin
 
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix;
-    glMultMatrixf(@ref.VertMat[0, 0]);
+    if (aForcedWidth > 0) then begin
+      m := ref.VertMat;
+      m[0] := tsVector4f(aForcedWidth, 0, 0, 0);
+      glMultMatrixf(@m[0, 0]);
+    end else
+      glMultMatrixf(@ref.VertMat[0, 0]);
 
     glBindBuffer(GL_ARRAY_BUFFER, fVBO);
     glEnableClientState(GL_VERTEX_ARRAY);

@@ -505,11 +505,11 @@ begin
       Size := GetGlyphOutlineA(DC, GlyphIndex, GGO_METRICS or GGO_GLYPH_INDEX, @Metric, 0, nil, @font.fMat2);
 
     if (Size <> GDI_ERROR) then begin
-      aGlyphOrigin.x := Round(Metric.gmptGlyphOrigin.x / font.fMat2.eM11.value);
+      aGlyphOrigin.x := Metric.gmptGlyphOrigin.x;
       aGlyphOrigin.y := Metric.gmptGlyphOrigin.y;
-      aGlyphSize.x   := Round(Metric.gmBlackBoxX / font.fMat2.eM11.value);
+      aGlyphSize.x   := Metric.gmBlackBoxX;
       aGlyphSize.y   := Metric.gmBlackBoxY;
-      aAdvance       := Round(Metric.gmCellIncX / font.fMat2.eM11.value);
+      aAdvance       := Metric.gmCellIncX;
       result         := true;
     end;
   finally

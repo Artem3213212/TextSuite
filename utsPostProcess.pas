@@ -42,12 +42,12 @@ type
   private
     fKernel: TtsKernel2D;
     fColor: TtsColor4f;
-    fUpdateCharSize: Boolean;
+    fKeepCharSize: Boolean;
   public
     procedure Execute(const aChar: TtsChar; const aCharImage: TtsImage); override;
   public
     constructor Create(const aWidth, aStrength: Single; const aColor: TtsColor4f;
-      const aUpdateCharSize: Boolean = false);
+      const aKeepCharSize: Boolean = false);
     destructor Destroy; override;
   end;
 
@@ -184,27 +184,31 @@ begin
     FreeAndNil(orig);
   end;
 
-  if fUpdateCharSize then begin
-    aChar.GlyphRect := tsRect(
-      aChar.GlyphRect.Left   + fKernel.SizeX - fKernel.MidSizeX,
-      aChar.GlyphRect.Top    + fKernel.SizeY - fKernel.MidSizeY,
-      aChar.GlyphRect.Right  + fKernel.SizeX + fKernel.MidSizeX,
-      aChar.GlyphRect.Bottom + fKernel.SizeY + fKernel.MidSizeY);
+  aChar.GlyphRect := tsRect(
+    aChar.GlyphRect.Left,
+    aChar.GlyphRect.Top,
+    aChar.GlyphRect.Right  + 2 * fKernel.SizeX,
+    aChar.GlyphRect.Bottom + 2 * fKernel.SizeY);
+
+  if fKeepCharSize then begin
     aChar.GlyphOrigin := tsPosition(
-      aChar.GlyphOrigin.x + fKernel.MidSizeX,
-      aChar.GlyphOrigin.y + fKernel.MidSizeY);
-    aChar.Advance := aChar.Advance + fKernel.MidSizeX ;
+      aChar.GlyphOrigin.x - fKernel.SizeX,
+      aChar.GlyphOrigin.y + fKernel.SizeY);
+  end else begin
+    aChar.Advance := aChar.Advance + 2 * fKernel.SizeX;
+    aChar.GlyphOrigin := tsPosition(
+      aChar.GlyphOrigin.x,
+      aChar.GlyphOrigin.y + fKernel.SizeY);
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-constructor TtsPostProcessBorder.Create(const aWidth, aStrength: Single; const aColor: TtsColor4f;
-  const aUpdateCharSize: Boolean);
+constructor TtsPostProcessBorder.Create(const aWidth, aStrength: Single; const aColor: TtsColor4f; const aKeepCharSize: Boolean);
 begin
   inherited Create;
-  fKernel         := TtsKernel2D.Create(aWidth, aStrength);
-  fColor          := aColor;
-  fUpdateCharSize := aUpdateCharSize;
+  fKernel       := TtsKernel2D.Create(aWidth, aStrength);
+  fColor        := aColor;
+  fKeepCharSize := aKeepCharSize;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -236,9 +240,14 @@ begin
     tmpY := fKernel.Size - fY;
     aCharImage.Blend(orig, tmpX, tmpY, @tsBlendFundAlpha);
 
+    aChar.GlyphRect := tsRect(
+      aChar.GlyphRect.Left,
+      aChar.GlyphRect.Top,
+      aChar.GlyphRect.Right  + 2 * fKernel.Size,
+      aChar.GlyphRect.Bottom + 2 * fKernel.Size);
     aChar.GlyphOrigin := tsPosition(
       aChar.GlyphOrigin.x - tmpX,
-      aChar.GlyphOrigin.y - tmpX);
+      aChar.GlyphOrigin.y + tmpX);
   finally
     FreeAndNil(orig);
   end;

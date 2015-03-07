@@ -199,7 +199,7 @@ var
 
   function AddToTexture(const aTexture: PtsFontTexture): TtsCharRenderRefOpenGL;
   var
-    x, y: Integer;
+    x, y, wChar, hChar, l, t: Integer;
     item: PtsTextureTreeItem;
   begin
     item := InsertToTree(aTexture^.Usage, 0, 0, aTexture^.Size, aTexture^.Size, x, y);
@@ -209,18 +209,22 @@ var
     item^.ref := TtsCharRenderRefOpenGL.Create;
     result    := item^.ref;
 
+    wChar := aChar.GlyphRect.Right  - aChar.GlyphRect.Left;
+    hChar := aChar.GlyphRect.Bottom - aChar.GlyphRect.Top;
+    l     := aChar.GlyphRect.Left + x;
+    t     := aChar.GlyphRect.Top  + y;
     result.TextureID := aTexture^.ID;
     result.Size      := tsPosition(aCharImage.Width, aCharImage.Height);
     result.TexMat := tsMatrix4f(
-      tsVector4f(aCharImage.Width  / aTexture^.Size, 0.0, 0.0, 0.0),
-      tsVector4f(0.0, aCharImage.Height / aTexture^.Size, 0.0, 0.0),
+      tsVector4f(wChar  / aTexture^.Size,       0.0, 0.0, 0.0),
+      tsVector4f(0.0,        hChar / aTexture^.Size, 0.0, 0.0),
       tsVector4f(0.0,                                0.0, 1.0, 0.0),
-      tsVector4f(x / aTexture^.Size,  y / aTexture^.Size, 0.0, 1.0));
+      tsVector4f(l / aTexture^.Size,  t / aTexture^.Size, 0.0, 1.0));
     result.VertMat := tsMatrix4f(
-      tsVector4f(aCharImage.Width, 0.0, 0.0, 0.0),
-      tsVector4f(0.0, aCharImage.Height, 0.0, 0.0),
+      tsVector4f(wChar, 0.0, 0.0, 0.0),
+      tsVector4f(0.0, hChar, 0.0, 0.0),
       tsVector4f(0.0, 0.0, 1.0, 0.0),
-      tsVector4f(-aChar.GlyphRect.Left, -aChar.GlyphRect.Top - aChar.GlyphOrigin.y, 0.0, 1.0));
+      tsVector4f(aChar.GlyphOrigin.x, -aChar.GlyphOrigin.y, 0.0, 1.0));
 
     UploadTexData(result, aCharImage, x, y);
   end;

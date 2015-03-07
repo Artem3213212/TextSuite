@@ -35,6 +35,8 @@ type
 
     function ConvertFont(const aFont: TtsFont): TtsFontFreeType;
     procedure LoadNames(const aFace: FT_Face; var aProperties: TtsFontProperties);
+    function CreateFont(const aFace: FT_Face; const aRenderer: TtsRenderer; const aSize: Integer;
+      const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont;
   protected
     function GetGlyphMetrics(const aFont: TtsFont; const aCharCode: WideChar;
       out aGlyphOrigin, aGlyphSize: TtsPosition; out aAdvance: Integer): Boolean; override;
@@ -42,6 +44,8 @@ type
       const aCharImage: TtsImage); override;
   public
     function GetFontByFile(const aFilename: String; const aRenderer: TtsRenderer; const aSize: Integer;
+      const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload;
+    function GetFontByStream(const aStream: TStream;  const aRenderer: TtsRenderer; const aSize: Integer;
       const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload;
 
     constructor Create(const aContext: TtsContext);
@@ -168,6 +172,57 @@ begin
           aProperties.FullName := Decode;
     end;
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function TtsFontGeneratorFreeType.CreateFont(const aFace: FT_Face; const aRenderer: TtsRenderer; const aSize: Integer;
+  const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont;
+var
+  face: FT_Face;
+  err: FT_Error;
+  prop: TtsFontProperties;
+  os2: PTT_OS2;
+  hz: PTT_HoriHeader;
+begin
+  err := FT_Set_Char_Size(aFace, 0, aSize * FT_SIZE_FACTOR, FT_SIZE_RES, FT_SIZE_RES);
+  if (err <> 0) then
+    raise EtsException.Create('unable to set char size: error=' + IntToStr(err));
+
+  FillByte(prop{%H-}, SizeOf(prop), 0);
+  prop.AntiAliasing := tsAANormal;
+  prop.FaceName     := aFace^.family_name;
+  prop.StyleName    := aFace^.style_name;
+  LoadNames(aFace, prop);
+
+  prop.Size         := aSize;
+  prop.AntiAliasing := aAntiAliasing;
+  prop.DefaultChar  := '?';
+  prop.Style        := aStyle + [tsStyleBold, tsStyleItalic];
+  if ((aFace^.style_flags and FT_STYLE_FLAG_BOLD) = 0) then
+    Exclude(prop.Style, tsStyleBold);
+  if ((aFace^.style_flags and FT_STYLE_FLAG_ITALIC) = 0) then
+    Exclude(prop.Style, tsStyleItalic);
+
+  prop.Ascent           :=  aFace^.size^.metrics.ascender  div FT_SIZE_FACTOR;
+  prop.Descent          := -aFace^.size^.metrics.descender div FT_SIZE_FACTOR;
+  prop.ExternalLeading  := 0;
+  prop.BaseLineOffset   := 0;
+
+  prop.UnderlinePos  := aFace^.underline_position  div FT_SIZE_FACTOR;
+  prop.UnderlineSize := aFace^.underline_thickness div FT_SIZE_FACTOR;
+
+  os2 := PTT_OS2(FT_Get_Sfnt_Table(aFace, FT_SFNT_OS2));
+  if Assigned(os2) and (os2^.version <> $FFFF) then begin
+    prop.StrikeoutPos  := os2^.yStrikeoutPosition div FT_SIZE_FACTOR;
+    prop.StrikeoutSize := os2^.yStrikeoutSize     div FT_SIZE_FACTOR;
+  end;
+
+  hz := PTT_HoriHeader(FT_Get_Sfnt_Table(aFace, FT_SFNT_HHEA));
+  if Assigned(hz) then begin
+    prop.ExternalLeading := hz^.Line_Gap div FT_SIZE_FACTOR;
+  end;
+
+  result := TtsFontFreeType.Create(TtsFreeTypeFaceHandle.Create(aFace), aRenderer, self, prop);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -303,53 +358,36 @@ function TtsFontGeneratorFreeType.GetFontByFile(const aFilename: String; const a
 var
   face: FT_Face;
   err: FT_Error;
-  prop: TtsFontProperties;
-  os2: PTT_OS2;
-  hz: PTT_HoriHeader;
 begin
   err := FT_New_Face(fHandle, PAnsiChar(aFilename), 0, @face);
   if (err <> 0) then
     raise EtsException.Create('unable to create free type face from file: ' + aFilename + ' error=' + IntToStr(err));
+  result := CreateFont(face, aRenderer, aSize, aStyle, aAntiAliasing);
+end;
 
-  err := FT_Set_Char_Size(face, 0, aSize * FT_SIZE_FACTOR, FT_SIZE_RES, FT_SIZE_RES);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function TtsFontGeneratorFreeType.GetFontByStream(const aStream: TStream; const aRenderer: TtsRenderer;
+  const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont;
+var
+  face: FT_Face;
+  err: FT_Error;
+  ms: TMemoryStream;
+begin
+  if (aStream is TMemoryStream) then begin
+    ms := (aStream as TMemoryStream);
+    err := FT_New_Memory_Face(fHandle, PByte(ms.Memory) + ms.Position, ms.Size - ms.Position, 0, @face);
+  end else begin
+    ms := TMemoryStream.Create;
+    try
+      ms.CopyFrom(aStream, aStream.Size - aStream.Position);
+      err := FT_New_Memory_Face(fHandle, PByte(ms.Memory), ms.Size, 0, @face);
+    finally
+      FreeAndNil(ms);
+    end;
+  end;
   if (err <> 0) then
-    raise EtsException.Create('unable to set char size: error=' + IntToStr(err));
-
-  FillByte(prop{%H-}, SizeOf(prop), 0);
-  prop.AntiAliasing := tsAANormal;
-  prop.FaceName     := face^.family_name;
-  prop.StyleName    := face^.style_name;
-  LoadNames(face, prop);
-
-  prop.Size         := aSize;
-  prop.AntiAliasing := aAntiAliasing;
-  prop.DefaultChar  := '?';
-  prop.Style        := aStyle + [tsStyleBold, tsStyleItalic];
-  if ((face^.style_flags and FT_STYLE_FLAG_BOLD) = 0) then
-    Exclude(prop.Style, tsStyleBold);
-  if ((face^.style_flags and FT_STYLE_FLAG_ITALIC) = 0) then
-    Exclude(prop.Style, tsStyleItalic);
-
-  prop.Ascent           :=  face^.size^.metrics.ascender  div FT_SIZE_FACTOR;
-  prop.Descent          := -face^.size^.metrics.descender div FT_SIZE_FACTOR;
-  prop.ExternalLeading  := 0;
-  prop.BaseLineOffset   := 0;
-
-  prop.UnderlinePos  := face^.underline_position  div FT_SIZE_FACTOR;
-  prop.UnderlineSize := face^.underline_thickness div FT_SIZE_FACTOR;
-
-  os2 := PTT_OS2(FT_Get_Sfnt_Table(face, FT_SFNT_OS2));
-  if Assigned(os2) and (os2^.version <> $FFFF) then begin
-    prop.StrikeoutPos  := os2^.yStrikeoutPosition div FT_SIZE_FACTOR;
-    prop.StrikeoutSize := os2^.yStrikeoutSize     div FT_SIZE_FACTOR;
-  end;
-
-  hz := PTT_HoriHeader(FT_Get_Sfnt_Table(face, FT_SFNT_HHEA));
-  if Assigned(hz) then begin
-    prop.ExternalLeading := hz^.Line_Gap div FT_SIZE_FACTOR;
-  end;
-
-  result := TtsFontFreeType.Create(TtsFreeTypeFaceHandle.Create(face), aRenderer, self, prop);
+    raise EtsException.Create('unable to create free type face from stream: error=' + IntToStr(err));
+  result := CreateFont(face, aRenderer, aSize, aStyle, aAntiAliasing);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

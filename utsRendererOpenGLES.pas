@@ -42,7 +42,7 @@ type
     procedure SetDrawPos(const X, Y: Integer); override;
     procedure MoveDrawPos(const X, Y: Integer); override;
     procedure SetColor(const aColor: TtsColor4f); override;
-    procedure Render(const aCharRef: TtsCharRenderRef); override;
+    procedure Render(const aCharRef: TtsCharRenderRef; const aForcedWidth: Integer); override;
   public
     property ShaderProgram:    GLuint      read fShaderProgram   write SetShaderProgram;
     property ProjectionMatrix: TtsMatrix4f read fProjMatrix      write SetProjectionMatrix;
@@ -354,9 +354,10 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsRendererOpenGLES.Render(const aCharRef: TtsCharRenderRef);
+procedure TtsRendererOpenGLES.Render(const aCharRef: TtsCharRenderRef; const aForcedWidth: Integer);
 var
   ref: TtsCharRenderRefOpenGL;
+  m: TtsMatrix4f;
 begin
   if Assigned(aCharRef) and (aCharRef is TtsCharRenderRefOpenGL) then begin
     ref := (aCharRef as TtsCharRenderRefOpenGL);
@@ -369,8 +370,14 @@ begin
     glVertexAttribPointer(ATTRIB_LOCATION_TEXCOORD, 2, GL_FLOAT, false, SizeOf(TVertex), Pointer(8));
     glUseProgram(fShaderProgram);
 
-    if (fCharPosLocation >= 0) then
-      glUniformMatrix4fv(fCharPosLocation, 1, false, @ref.VertMat);
+    if (fCharPosLocation >= 0) then begin
+      if (aForcedWidth > 0) then begin
+        m := ref.VertMat;
+        m[0] := tsVector4f(aForcedWidth, 0, 0, 0);
+        glUniformMatrix4fv(fCharPosLocation, 1, false, @m[0, 0]);
+      end else
+        glUniformMatrix4fv(fCharPosLocation, 1, false, @ref.VertMat[0, 0]);
+    end;
     if (fCharTexPosLocation >= 0) then
       glUniformMatrix4fv(fCharTexPosLocation, 1, false, @ref.TexMat);
 

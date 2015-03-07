@@ -326,10 +326,11 @@ type
     short_metrics: Pointer;
   end;
 
-  TFT_Init_FreeType = function(aLibrary: PFT_Library): FT_Error;
-  TFT_Done_FreeType = function(aLibrary: FT_Library): FT_Error;
-  TFT_New_Face      = function(aLibrary: FT_Library; const aFilename: PAnsiChar; aFaceIndex: FT_Long; aFace: PFT_Face): FT_Error;
-  TFT_Done_Face     = function(aFace: FT_Face): FT_Error;
+  TFT_Init_FreeType   = function(aLibrary: PFT_Library): FT_Error;
+  TFT_Done_FreeType   = function(aLibrary: FT_Library): FT_Error;
+  TFT_New_Face        = function(aLibrary: FT_Library; const aFilename: PAnsiChar; aFaceIndex: FT_Long; aFace: PFT_Face): FT_Error;
+  TFT_New_Memory_Face = function(aLibrary: FT_Library; aData: PByte; aSize: FT_Long; aFaceIndex: FT_Long; aFace: PFT_Face): FT_Error;
+  TFT_Done_Face       = function(aFace: FT_Face): FT_Error;
 
   TFT_Get_Sfnt_Name_Count = function(aFace: FT_Face): FT_UInt;
   TFT_Get_Sfnt_Name       = function(aFace: FT_Face; aIndex: FT_UInt; aName: PFT_SfntName): FT_Error;
@@ -339,10 +340,11 @@ type
   TFT_Get_Sfnt_Table = function(aFace: FT_Face; aTag: Integer): Pointer;
 
 var
-  FT_Init_FreeType: TFT_Init_FreeType;
-  FT_Done_FreeType: TFT_Done_FreeType;
-  FT_New_Face:      TFT_New_Face;
-  FT_Done_Face:     TFT_Done_Face;
+  FT_Init_FreeType:   TFT_Init_FreeType;
+  FT_Done_FreeType:   TFT_Done_FreeType;
+  FT_New_Face:        TFT_New_Face;
+  FT_New_Memory_Face: TFT_New_Memory_Face;
+  FT_Done_Face:       TFT_Done_Face;
 
   FT_Get_Sfnt_Name_Count: TFT_Get_Sfnt_Name_Count;
   FT_Get_Sfnt_Name:       TFT_Get_Sfnt_Name;
@@ -648,10 +650,11 @@ begin
         raise EtsException.Create('unable to load free type lib: ' + LIB_FREE_TYPE + ' error=' + IntToStr(GetLastOSError));
     end;
 
-    FT_Init_FreeType := TFT_Init_FreeType(GetProcAddr('FT_Init_FreeType'));
-    FT_Done_FreeType := TFT_Done_FreeType(GetProcAddr('FT_Done_FreeType'));
-    FT_New_Face      := TFT_New_Face(     GetProcAddr('FT_New_Face'));
-    FT_Done_Face     := TFT_Done_Face(    GetProcAddr('FT_Done_Face'));
+    FT_Init_FreeType   := TFT_Init_FreeType(  GetProcAddr('FT_Init_FreeType'));
+    FT_Done_FreeType   := TFT_Done_FreeType(  GetProcAddr('FT_Done_FreeType'));
+    FT_New_Face        := TFT_New_Face(       GetProcAddr('FT_New_Face'));
+    FT_New_Memory_Face := TFT_New_Memory_Face(GetProcAddr('FT_New_Memory_Face'));
+    FT_Done_Face       := TFT_Done_Face(      GetProcAddr('FT_Done_Face'));
 
     FT_Get_Sfnt_Name_Count := TFT_Get_Sfnt_Name_Count(GetProcAddr('FT_Get_Sfnt_Name_Count'));
     FT_Get_Sfnt_Name       := TFT_Get_Sfnt_Name(      GetProcAddr('FT_Get_Sfnt_Name'));
@@ -684,8 +687,18 @@ begin
 
     FT_Done_FreeType(ftLibrary);
 
-    FT_Init_FreeType := nil;
-    FT_Done_FreeType := nil;
+    FT_Init_FreeType   := nil;
+    FT_Done_FreeType   := nil;
+    FT_New_Face        := nil;
+    FT_New_Memory_Face := nil;
+    FT_Done_Face       := nil;
+
+    FT_Get_Sfnt_Name_Count := nil;
+    FT_Get_Sfnt_Name       := nil;
+
+    FT_Set_Char_Size  := nil;
+    FT_Load_Char      := nil;
+    FT_Get_Sfnt_Table := nil;
 
     if (FreeTypeLibHandle <> 0) then begin
       FreeLibrary(FreeTypeLibHandle);

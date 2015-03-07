@@ -384,7 +384,7 @@ type
     function  GetDrawPos: TtsPosition; virtual; abstract;
     procedure MoveDrawPos(const X, Y: Integer); virtual; abstract;
     procedure SetColor(const aColor: TtsColor4f); virtual; abstract;
-    procedure Render(const aCharRef: TtsCharRenderRef); virtual; abstract;
+    procedure Render(const aCharRef: TtsCharRenderRef; const aForcedWidth: Integer = 0); virtual; abstract;
   public
     property Context:    TtsContext read fContext;
     property Format:     TtsFormat  read fFormat;
@@ -1287,7 +1287,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 procedure TtsFontGenerator.DrawLine(const aChar: TtsChar; const aCharImage: TtsImage; aLinePosition, aLineSize: Integer);
 var
-  NewSize, NewPos: TtsPosition;
+  ImgSize, ImgPos, Origin: TtsPosition;
+  Rect: TtsRect;
   YOffset, y: Integer;
 
   procedure FillLine(aData: PByte);
@@ -1296,7 +1297,7 @@ var
     c: TtsColor4f;
     tmp: PByte;
   begin
-    w := NewSize.x;
+    w := aCharImage.Width;
     while (w > 0) do begin
       tmp := aData;
       tsFormatUnmap(aCharImage.Format, tmp, c);
@@ -1314,47 +1315,56 @@ begin
   aLinePosition := aLinePosition - aLineSize;
 
   // calculate width and height
-  NewPos.x  := 0;
-  NewPos.y  := 0;
-  NewSize.x := aCharImage.Width;
-  NewSize.y := aCharImage.Height;
+  ImgPos  := tsPosition(0, 0);
+  ImgSize := tsPosition(aCharImage.Width, aCharImage.Height);
+  Origin  := aChar.GlyphOrigin;
+  Rect    := aChar.GlyphRect;
 
-  // expand image to the full advance
-  if aChar.Advance > aCharImage.Width then
-    NewSize.x := aChar.Advance;
-
-  // add glyph position to image width and set position
-  if aChar.GlyphOrigin.x > aChar.GlyphRect.Left then begin
-    NewSize.x := NewSize.x + aChar.GlyphOrigin.x;
-    NewPos.x  := aChar.GlyphOrigin.x;
-  end;
-  if (aChar.GlyphOrigin.x < 0) then
-    NewSize.x := NewSize.x - aChar.GlyphOrigin.x;
-
-  // line is under the image
-  if aLinePosition < (aChar.GlyphOrigin.y - aCharImage.Height) then
-    NewSize.y := NewSize.y + (aChar.GlyphOrigin.y - aCharImage.Height - aLinePosition);
-
-  // line is above the image
-  if aLinePosition + aLineSize > aChar.GlyphOrigin.y then begin
-    NewPos.y  := ((aLinePosition + aLineSize) - aChar.GlyphOrigin.y);
-    NewSize.y := NewSize.y + NewPos.y;
+  // expand left rect border to origin
+  if (Origin.x > 0) then begin
+    dec(Rect.Left, Origin.x);
+    Origin.x := 0;
   end;
 
-  // resize
-  aCharImage.Resize(NewSize.x, NewSize.y, NewPos.x, NewPos.y);
+  // expand right rect border to advanced
+  if (Rect.Right - Rect.Left < aChar.Advance) then begin
+    Rect.Right := Rect.Left + aChar.Advance;
+  end;
+
+  // expand bottom rect border
+  if (Origin.y - aLinePosition > Rect.Bottom) then begin
+    Rect.Bottom := Origin.y - aLinePosition;
+  end;
+
+  // expand top rect border
+  if (Origin.y - aLinePosition - aLineSize < Rect.Top) then begin
+    Rect.Top := Origin.y - aLinePosition - aLineSize;
+    Origin.y := aLinePosition + aLineSize;
+  end;
+
+  // update image size
+  if (Rect.Right - Rect.Left > ImgSize.x) then begin
+    ImgSize.x := Rect.Right - Rect.Left;
+    ImgPos.x  := Max(-Rect.Left, 0);
+    inc(Rect.Left,  ImgPos.x);
+    inc(Rect.Right, ImgPos.x);
+  end;
+  if (Rect.Bottom - Rect.Top > ImgSize.y) then begin
+    ImgSize.y := Rect.Bottom - Rect.Top;
+    ImgPos.y  := Max(-Rect.Top, 0);
+    inc(Rect.Top,    ImgPos.y);
+    inc(Rect.Bottom, ImgPos.y);
+  end;
+  aCharImage.Resize(ImgSize.x, ImgSize.y, ImgPos.x, ImgPos.y);
 
   // draw lines
-  YOffset := (aChar.GlyphOrigin.y + NewPos.y) - aLinePosition;
+  YOffset := Rect.Top + Origin.y - aLinePosition;
   for y := 1 to aLineSize do
     FillLine(aCharImage.ScanLine[YOffset - y]);
 
   // move glyph rect
-  aChar.GlyphRect := tsRect(
-    aChar.GlyphRect.Left   + NewPos.x,
-    aChar.GlyphRect.Top    + NewPos.y,
-    aChar.GlyphRect.Right  + NewPos.x,
-    aChar.GlyphRect.Bottom + NewPos.y);
+  aChar.GlyphOrigin := Origin;
+  aChar.GlyphRect   := Rect;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1393,14 +1403,19 @@ var
   CharImage: TtsImage;
 begin
   result := nil;
-  if not GetGlyphMetrics(aFont, aCharCode, GlyphOrigin, GlyphSize, Advance) or
-     not ((GlyphOrigin.x <> 0) or (GlyphOrigin.y <> 0) or (GlyphSize.x <> 0) or (GlyphSize.y <> 0) or (Advance <> 0)) then
+  if (aCharCode <> #0) and
+     (not GetGlyphMetrics(aFont, aCharCode, GlyphOrigin, GlyphSize, Advance) or
+      not ((GlyphOrigin.x <> 0) or (GlyphOrigin.y <> 0) or (GlyphSize.x <> 0) or (GlyphSize.y <> 0) or (Advance <> 0))) then
         exit;
 
   CharImage := TtsImage.Create;
   try
     if aRenderer.SaveImages then begin
-      if (GlyphSize.x > 0) and (GlyphSize.y > 0) then
+      if (aCharCode = #0) then begin
+        CharImage.CreateEmpty(aRenderer.Format, 3, 1);
+        GlyphOrigin := tsPosition(0, 1);
+        Advance     := 1;
+      end else if (GlyphSize.x > 0) and (GlyphSize.y > 0) then
         GetCharImage(aFont, aCharCode, CharImage);
 
       if CharImage.IsEmpty and ([tsStyleUnderline, tsStyleStrikeout] * aFont.Properties.Style <> []) then begin
@@ -1412,8 +1427,11 @@ begin
     result := TtsChar.Create(aCharCode);
     try
       result.GlyphOrigin := GlyphOrigin;
-      result.GlyphRect   := tsRect(0, 0, CharImage.Width, CharImage.Height);
       result.Advance     := Advance;
+      if (aCharCode = #0) then
+        result.GlyphRect := tsRect(1, 0, 2, 1)
+      else
+        result.GlyphRect := tsRect(0, 0, CharImage.Width, CharImage.Height);
 
       if (aRenderer.SaveImages) then begin
         try
@@ -2032,9 +2050,9 @@ var
           while (c^ <> #0) do begin
             char := GetChar(c^);
             if Assigned(char) then begin
-              MoveDrawPos(Char.GlyphOrigin.x, -metric.BaseLineOffset);
+              MoveDrawPos(0, -metric.BaseLineOffset);
               Render(char.RenderRef);
-              MoveDrawPos(char.Advance - char.GlyphOrigin.x + font.CharSpacing, metric.BaseLineOffset);
+              MoveDrawPos(char.Advance + font.CharSpacing, metric.BaseLineOffset);
             end;
             inc(c);
           end;
@@ -2049,9 +2067,9 @@ var
             char := GetChar(c^);
             if Assigned(char) then begin
               if (font.Properties.Style * [tsStyleUnderline, tsStyleStrikeout] <> []) then begin
-                MoveDrawPos(char.GlyphOrigin.x, -metric.BaseLineOffset);
+                MoveDrawPos(0, -metric.BaseLineOffset);
                 Render(char.RenderRef);
-                MoveDrawPos(char.Advance - char.GlyphOrigin.x + font.CharSpacing, metric.BaseLineOffset);
+                MoveDrawPos(char.Advance + font.CharSpacing, metric.BaseLineOffset);
               end else begin
                 MoveDrawPos(char.Advance + font.CharSpacing, 0);
               end;
@@ -2062,6 +2080,9 @@ var
           tmp := Trunc(ExtraSpaceActual);
           ExtraSpaceActual := ExtraSpaceActual - tmp;
           if (font.Properties.Style * [tsStyleUnderline, tsStyleStrikeout] <> []) then begin
+            char := GetChar(#0);
+            if Assigned(char) then
+              Render(char.RenderRef, tmp);
             // TODO draw lines; maybe with a temporary created fake char or something like an empty char?
           end;
           MoveDrawPos(tmp, 0);
@@ -2108,7 +2129,7 @@ var
       tsHorzAlignRight:
         x := rect.Right - line^.meta.Width;
       tsHorzAlignJustify:
-        if (tsAutoLineBreak in line^.Flags) then
+        if (tsAutoLineBreak in line^.Flags) and (line^.meta.SpaceCount > 0) then
           ExtraSpaceTotal := (aBlock.Width - line^.meta.Width) / line^.meta.SpaceCount;
     end;
 
