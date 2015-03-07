@@ -1,6 +1,8 @@
 unit utsRendererOpenGL;
 
-{$mode objfpc}{$H+}
+{$IFDEF FPC}
+{$mode delphi}{$H+}
+{$ENDIF}
 
 interface
 
@@ -81,9 +83,9 @@ function TtsRendererOpenGL.CreateNewTexture: PtsFontTexture;
 begin
   new(result);
   try
-    FillByte(result^, SizeOf(result^), 0);
+    FillChar(result^, SizeOf(result^), #0);
     new(result^.Usage);
-    FillByte(result^.Usage^, SizeOf(result^.Usage^), 0);
+    FillChar(result^.Usage^, SizeOf(result^.Usage^), #0);
     result^.Size := TextureSize;
     glGenTextures(1, @result^.ID);
     glBindTexture(GL_TEXTURE_2D, result^.ID);

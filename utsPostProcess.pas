@@ -1,6 +1,8 @@
 unit utsPostProcess;
 
-{$mode objfpc}{$H+}
+{$IFDEF FPC}
+{$mode delphi}{$H+}
+{$ENDIF}
 
 interface
 
@@ -144,7 +146,11 @@ var
          (tmpY >= 0) and (tmpY < orig.Height) and
          orig.GetPixelAt(tmpX, tmpY, c) then
       begin
+        {$IFDEF FPC}
         for chan in mask do begin
+        {$ELSE}
+        for chan := low(TtsColorChannel) to high(TtsColorChannel) do if (chan in mask) then begin
+        {$ENDIF}
           s := c.arr[Integer(chan)] * fColor.arr[Integer(chan)] * fKernel.Items[i].Value;
           if (s > result.arr[Integer(chan)]) then begin
             result.arr[Integer(chan)] := s;

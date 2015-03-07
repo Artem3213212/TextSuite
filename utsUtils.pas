@@ -1,6 +1,8 @@
 unit utsUtils;
 
-{$mode objfpc}{$H+}
+{$IFDEF FPC}
+{$mode delphi}{$H+}
+{$ENDIF}
 
 interface
 
@@ -114,7 +116,7 @@ const
   STATE_STARTBYTE  = 0;
   STATE_FOLLOWBYTE = 1;
 var
-  cc: QWord;
+  cc: UInt64;
   len, state, c: Integer;
   p: PByte;
   tmp: Byte;
@@ -123,18 +125,20 @@ begin
   if not Assigned(aDst) or not Assigned(aSrc) or (aSize <= 0) then
     exit;
 
+  c     := 0;
+  cc    := 0;
   p     := PByte(aSrc);
   len   := Length(aSrc);
   state := STATE_STARTBYTE;
   while (len > 0) do begin
     case state of
       STATE_STARTBYTE: begin
-        if (p^ and %10000000 = 0) then begin
+        if (p^ and $80 = 0) then begin
           AddToDest(p^);
-        end else if (p^ and %01000000 > 0) then begin
+        end else if (p^ and $40 > 0) then begin
           tmp := p^;
           c   := 0;
-          while (tmp and %10000000) > 0 do begin
+          while (tmp and $80) > 0 do begin
             inc(c);
             tmp := tmp shl 1;
           end;
@@ -145,8 +149,8 @@ begin
       end;
 
       STATE_FOLLOWBYTE: begin
-        if ((p^ and %11000000) = %10000000) then begin
-          cc := (cc shl 6) or (p^ and %00111111);
+        if ((p^ and $C0) = $80) then begin
+          cc := (cc shl 6) or (p^ and $3F);
           c := c - 1;
           if (c = 0) then begin
             AddToDest(cc);
@@ -183,7 +187,11 @@ var
 begin
   result := 0;
   while (aSrcSize > 1) and (aDstSize > 0) do begin
+{$IFDEF FPC}
     tmp := (aSrc^ shl 8) or (aSrc + 1)^;
+{$ELSE}
+    tmp := (PByteArray(aSrc)[0] shl 8) or PByteArray(aSrc)[1];
+{$ENDIF}
     inc(aSrc, 2);
     dec(aSrcSize, 2);
     AddToDest(tmp);

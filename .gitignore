@@ -1,4 +1,5 @@
 *.exe
 *.log
+*.dcu
 lib/
 old/

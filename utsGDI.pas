@@ -1,14 +1,21 @@
 unit utsGDI;
 
-{$mode objfpc}{$H+}
+{$IFDEF FPC}
+{$mode delphi}{$H+}
+{$ENDIF}
 
 interface
 
 uses
-  Classes, SysUtils, utsTypes, syncobjs, dynlibs;
+  Classes, SysUtils, utsTypes, syncobjs{$IFDEF FPC}, dynlibs{$ELSE}, Windows{$ENDIF};
 
 type
   HDC = Cardinal;
+{$IFNDEF FPC}
+  DWORD = Cardinal;
+  PDWORD = ^DWORD;
+  TLibHandle = Cardinal;
+{$ENDIF}  
 
   TFixed = packed record
     fract: Word;
@@ -235,7 +242,7 @@ procedure InitGDI;
 
   function GetProcAddr(const aLibHandle: TLibHandle; const aName: String): Pointer;
   begin
-    result := GetProcAddress(aLibHandle, aName);
+    result := GetProcAddress(aLibHandle, PAnsiChar(aName));
     if not Assigned(result) then
       raise EtsException.Create('unable to load procedure from library: ' + aName);
   end;

@@ -1,6 +1,8 @@
 unit utsOpenGLUtils;
 
-{$mode objfpc}{$H+}
+{$IFDEF FPC}
+{$mode delphi}{$H+}
+{$ENDIF}
 
 interface
 
@@ -88,9 +90,9 @@ constructor TtsCharRenderRefOpenGL.Create;
 begin
   inherited Create;
   TextureID := 0;
-  FillByte(TexMat,  SizeOf(TexMat),  0);
-  FillByte(VertMat, SizeOf(VertMat), 0);
-  FillByte(Size,    SizeOf(Size),    0);
+  FillChar(TexMat,  SizeOf(TexMat),  #0);
+  FillChar(VertMat, SizeOf(VertMat), #0);
+  FillChar(Size,    SizeOf(Size),    #0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -185,8 +187,8 @@ var
     end else begin
       new(aItem^.children[0]);
       new(aItem^.children[1]);
-      FillByte(aItem^.children[0]^, SizeOf(aItem^.children[0]^), 0);
-      FillByte(aItem^.children[1]^, SizeOf(aItem^.children[1]^), 0);
+      FillChar(aItem^.children[0]^, SizeOf(aItem^.children[0]^), #0);
+      FillChar(aItem^.children[1]^, SizeOf(aItem^.children[1]^), #0);
       if (w - GlyphWidth) < (h - GlyphHeight) then begin
         aItem^.value := Y1 + GlyphHeight;
         result := InsertToTree(aItem^.children[0], X1, Y1, X2, aItem^.value, X, Y);
@@ -302,7 +304,7 @@ var
     begin
       FreeTextureTreeItem(aItem^.children[0]);
       FreeTextureTreeItem(aItem^.children[1]);
-      FillByte(aItem^, SizeOf(aItem^), 0);
+      FillChar(aItem^, SizeOf(aItem^), #0);
     end;
   end;
 

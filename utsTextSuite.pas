@@ -1,6 +1,8 @@
 unit utsTextSuite;
 
-{$mode objfpc}{$H+}
+{$IFDEF FPC}
+{$mode delphi}{$H+}
+{$ENDIF}
 
 interface
 
@@ -438,9 +440,9 @@ implementation
 
 const
   IMAGE_MODE_FUNCTIONS: array[TtsImageMode] of TtsImageModeFunc = (
-    @tsImageModeFuncIgnore,
-    @tsImageModeFuncReplace,
-    @tsImageModeFuncModulate);
+    tsImageModeFuncIgnore,
+    tsImageModeFuncReplace,
+    tsImageModeFuncModulate);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //TtsKernel1D///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -694,7 +696,7 @@ begin
   lSize   := lSize + ((4 - (lSize mod 4)) mod 4);
   dSize   := aHeight * lSize;
   ImgData := AllocMem(dSize);
-  FillByte(ImgData^, dSize, 0);
+  FillChar(ImgData^, dSize, #0);
   SetData(ImgData, aFormat, aWidth, aHeight, lSize, dSize);
 end;
 
@@ -1556,7 +1558,7 @@ begin
   if (aWidth <= 0) then
     exit;
   new(p);
-  FillByte(p^, SizeOf(p^), 0);
+  FillChar(p^, SizeOf(p^), #0);
   p^.ItemType := tsItemTypeSpacing;
   p^.Spacing  := aWidth;
   PushLineItem(p);
@@ -1635,7 +1637,7 @@ var
       exit;
 
     new(p);
-    FillByte(p^, SizeOf(p^), 0);
+    FillChar(p^, SizeOf(p^), #0);
     p^.ItemType := State;
 
     case State of
@@ -1869,7 +1871,7 @@ begin
   TrimSpaces(fLastLine);
 
   new(p);
-  FillByte(p^, SizeOf(p^), 0);
+  FillChar(p^, SizeOf(p^), #0);
   UpdateLineMeta(p);
 
   if Assigned(fLastLine) then begin
@@ -1910,7 +1912,7 @@ begin
     exit;
 
   New(p);
-  FillByte(p^, SizeOf(p^), 0);
+  FillChar(p^, SizeOf(p^), #0);
   fCurrentFont := aFont;
   p^.ItemType  := tsItemTypeFont;
   p^.Font      := fCurrentFont;
@@ -1925,7 +1927,7 @@ var
   p: PtsLineItem;
 begin
   New(p);
-  FillByte(p^, SizeOf(p^), 0);
+  FillChar(p^, SizeOf(p^), #0);
   p^.ItemType := tsItemTypeColor;
   p^.Color    := aColor;
   PushLineItem(p);

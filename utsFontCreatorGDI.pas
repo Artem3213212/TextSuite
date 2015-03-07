@@ -1,6 +1,8 @@
 unit utsFontCreatorGDI;
 
-{$mode objfpc}{$H+}
+{$IFDEF FPC}
+{$mode delphi}{$H+}
+{$ENDIF}
 
 interface
 
@@ -92,7 +94,7 @@ uses
 constructor TtsFontGDI.Create(const aRenderer: TtsRenderer; const aCreator: TtsFontGenerator; const aProperties: TtsFontProperties; const aHandle: THandle);
 begin
   inherited Create(aRenderer, aCreator, aProperties);
-  FillByte(fMat2, SizeOf(fMat2), 0);
+  FillChar(fMat2, SizeOf(fMat2), #0);
   fMat2.eM11.value := 1;
   fMat2.eM22.value := 1;
   fHandle          := aHandle;
@@ -223,7 +225,7 @@ begin
   try
     SelectObject(DC, aFont.fHandle);
     if Assigned(GetCharacterPlacementW) then begin
-      FillByte(GCPRes, SizeOf(GCPRes), 0);
+      FillChar(GCPRes, SizeOf(GCPRes), #0);
       GetMem(GCPRes.lpGlyphs, SizeOf(Cardinal));
       try
         GCPRes.lStructSize := SizeOf(GCPRes);
@@ -276,7 +278,7 @@ var
 begin
   if (aFont.fMat2.eM11.value <> 1) then
     raise EtsException.Create('invalid value');
-  FillByte(Metric, SizeOf(Metric), 0);
+  FillChar(Metric, SizeOf(Metric), #0);
 
   GlyphIndex := GetGlyphIndex(aFont, aCharCode);
   if (GlyphIndex < 0) then
@@ -336,7 +338,7 @@ var
   end;
 
 begin
-  FillByte(Metric, SizeOf(Metric), 0);
+  FillChar(Metric, SizeOf(Metric), #0);
 
   GlyphIndex := GetGlyphIndex(aFont, aCharCode);
   if (GlyphIndex < 0) then
@@ -403,14 +405,14 @@ var
 begin
   result := 0;
 
-  FillByte(aProperties, SizeOf(aProperties), 0);
+  FillChar(aProperties, SizeOf(aProperties), #0);
   aProperties.Size         := aSize;
   aProperties.Style        := aStyle;
   aProperties.AntiAliasing := aAntiAliasing;
   aProperties.Fontname     := aFontname;
 
   // prepare font attribs
-  FillByte(LogFont, SizeOf(LogFont), 0);
+  FillChar(LogFont, SizeOf(LogFont), #0);
   for i := 1 to min(Length(aFontname), Length(LogFont.lfFaceName)) do
     LogFont.lfFaceName[i-1] := aFontname[i];
   LogFont.lfCharSet   := DEFAULT_CHARSET;

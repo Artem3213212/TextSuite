@@ -1,6 +1,8 @@
 unit utsRendererOpenGLES;
 
-{$mode objfpc}{$H+}
+{$IFDEF FPC}
+{$mode delphi}{$H+}
+{$ENDIF}
 {.$DEFINE DEBUG}
 
 interface
