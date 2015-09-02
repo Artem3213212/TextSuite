@@ -17,7 +17,7 @@ type
     fHandle: THandle;
     fMat2: TMat2;
   protected
-    constructor Create(const aRenderer: TtsRenderer; const aCreator: TtsFontGenerator; const aProperties: TtsFontProperties; const aHandle: THandle);
+    {%H-}constructor Create(const aRenderer: TtsRenderer; const aCreator: TtsFontGenerator; const aProperties: TtsFontProperties; const aHandle: THandle);
   public
     destructor Destroy; override;
   end;
@@ -225,7 +225,7 @@ begin
   try
     SelectObject(DC, aFont.fHandle);
     if Assigned(GetCharacterPlacementW) then begin
-      FillChar(GCPRes, SizeOf(GCPRes), #0);
+      FillChar(GCPRes{%H-}, SizeOf(GCPRes), #0);
       GetMem(GCPRes.lpGlyphs, SizeOf(Cardinal));
       try
         GCPRes.lStructSize := SizeOf(GCPRes);
@@ -278,7 +278,7 @@ var
 begin
   if (aFont.fMat2.eM11.value <> 1) then
     raise EtsException.Create('invalid value');
-  FillChar(Metric, SizeOf(Metric), #0);
+  FillChar(Metric{%H-}, SizeOf(Metric), #0);
 
   GlyphIndex := GetGlyphIndex(aFont, aCharCode);
   if (GlyphIndex < 0) then
@@ -339,7 +339,7 @@ var
   end;
 
 begin
-  FillChar(Metric, SizeOf(Metric), #0);
+  FillChar(Metric{%H-}, SizeOf(Metric), #0);
 
   GlyphIndex := GetGlyphIndex(aFont, aCharCode);
   if (GlyphIndex < 0) then
@@ -404,14 +404,14 @@ var
   end;
 
 begin
-  FillChar(aProperties, SizeOf(aProperties), #0);
+  FillChar(aProperties{%H-}, SizeOf(aProperties), #0);
   aProperties.Size         := aSize;
   aProperties.Style        := aStyle;
   aProperties.AntiAliasing := aAntiAliasing;
   aProperties.Fontname     := aFontname;
 
   // prepare font attribs
-  FillChar(LogFont, SizeOf(LogFont), #0);
+  FillChar(LogFont{%H-}, SizeOf(LogFont), #0);
   tmpName := AnsiString(aFontname);
   for i := 1 to min(Length(aFontname), Length(LogFont.lfFaceName)) do
     LogFont.lfFaceName[i-1] := tmpName[i];
@@ -445,14 +445,14 @@ begin
       end;
     end;
 
-    if GetTextMetricsW(DC, TextMetric) then begin
+    if GetTextMetricsW(DC, TextMetric{%H-}) then begin
       aProperties.Ascent          := TextMetric.tmAscent;
       aProperties.Descent         := TextMetric.tmDescent;
       aProperties.ExternalLeading := TextMetric.tmExternalLeading;
       aProperties.DefaultChar     := TextMetric.tmDefaultChar;
     end;
 
-    if (GetOutlineTextMetricsW(DC, SizeOf(OutlineMetric), OutlineMetric) > 0) then begin
+    if (GetOutlineTextMetricsW(DC, SizeOf(OutlineMetric), OutlineMetric{%H-}) > 0) then begin
       aProperties.UnderlinePos  := OutlineMetric.otmsUnderscorePosition;
       aProperties.UnderlineSize := Min(1, OutlineMetric.otmsUnderscoreSize);
       aProperties.StrikeoutPos  := OutlineMetric.otmsStrikeoutPosition;

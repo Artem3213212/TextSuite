@@ -16,7 +16,7 @@ const
   NAME_ID_FULL_NAME  = 4;
 
 function MakeTTTableName(const ch1, ch2, ch3, ch4: Char): Cardinal;
-function GetTTString(pBuffer: Pointer; BufferSize: Integer; NameID, LanguageID: Cardinal; var Text: String): Boolean;
+function GetTTString(pBuffer: Pointer; BufferSize: Integer; NameID, LanguageID: Cardinal; out Text: String): Boolean;
 
 function GetTTFontFullNameFromStream(Stream: TStream; LanguageID: Cardinal): String;
 function GetTTFontFullNameFromFile(const aFilename: String; const aLanguageID: Cardinal): String;
@@ -98,7 +98,7 @@ begin
   Pos := Stream.Position;
 
   // Reading table header
-  Stream.Read(OffsetTable, sizeof(TT_OFFSET_TABLE));
+  Stream.Read(OffsetTable{%H-}, sizeof(TT_OFFSET_TABLE));
   OffsetTable.uNumOfTables := SWAPWORD(OffsetTable.uNumOfTables);
   OffsetTable.uMajorVersion := SWAPWORD(OffsetTable.uMajorVersion);
   OffsetTable.uMinorVersion := SWAPWORD(OffsetTable.uMinorVersion);
@@ -109,7 +109,7 @@ begin
 
   // seaching table with name
   for Idx := 0 to OffsetTable.uNumOfTables -1 do begin
-    Stream.Read(TableDir, sizeof(TT_TABLE_DIRECTORY));
+    Stream.Read(TableDir{%H-}, sizeof(TT_TABLE_DIRECTORY));
 
     if (TableName = TableDir.TableName) then begin
       TableDir.uOffset := SWAPLONG(TableDir.uOffset);
@@ -120,7 +120,7 @@ begin
         Stream.Seek(TableDir.uOffset, soBeginning);
         Size := Stream.Read(pBuff^, TableDir.uLength);
 
-        Result := Size = Integer(TableDir.uLength);
+        Result := (Size = Integer(TableDir.uLength));
       end else
 
       begin
@@ -141,7 +141,7 @@ begin
   Result := ord(ch4) shl 24 or ord(ch3) shl 16 or ord(ch2) shl 8 or ord(ch1);
 end;
 
-function GetTTString(pBuffer: Pointer; BufferSize: Integer; NameID, LanguageID: Cardinal; var Text: String): Boolean;
+function GetTTString(pBuffer: Pointer; BufferSize: Integer; NameID, LanguageID: Cardinal; out Text: String): Boolean;
 var
   pActBuffer: pByte;
   ttNTHeader: TT_NAME_TABLE_HEADER;
@@ -203,7 +203,7 @@ begin
 
   pActBuffer := pBuffer;
 
-  Move(pActBuffer^, ttNTHeader, sizeof(TT_NAME_TABLE_HEADER));
+  Move(pActBuffer^, ttNTHeader{%H-}, sizeof(TT_NAME_TABLE_HEADER));
   inc(pActBuffer, sizeof(TT_NAME_TABLE_HEADER));
 
   ttNTHeader.uNRCount := SWAPWORD(ttNTHeader.uNRCount);
@@ -295,6 +295,7 @@ var
 begin
   TableName := MakeTTTableName('n', 'a', 'm', 'e');
 
+  BufferSize := 0;
   if GetTTTableData(Stream, TableName, nil, BufferSize) then begin
     GetMem(Buffer, BufferSize);
     try

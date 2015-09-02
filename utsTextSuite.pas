@@ -145,7 +145,7 @@ type
     //function GetCharCreate(const aCharCode: WideChar): TtsChar;
     procedure AddChar(const aCharCode: WideChar; const aChar: TtsChar); overload;
   protected
-    constructor Create(const aRenderer: TtsRenderer; const aGenerator: TtsFontGenerator; const aProperties: TtsFontProperties);
+    {%H-}constructor Create(const aRenderer: TtsRenderer; const aGenerator: TtsFontGenerator; const aProperties: TtsFontProperties);
   public
     property CreateChars: Boolean read fCreateChars write fCreateChars;
     property Char[const aCharCode: WideChar]: TtsChar read GetChar;
@@ -337,7 +337,7 @@ type
   protected
     property Lines: PtsBlockLine read fFirstLine;
     procedure PushNewLine;
-    constructor Create(const aRenderer: TtsRenderer; const aTop, aLeft, aWidth, aHeight: Integer; const aFlags: TtsBlockFlags);
+    {%H-}constructor Create(const aRenderer: TtsRenderer; const aTop, aLeft, aWidth, aHeight: Integer; const aFlags: TtsBlockFlags);
   public
     property Renderer:     TtsRenderer   read fRenderer;
     property CurrentColor: TtsColor4f    read fCurrentColor;

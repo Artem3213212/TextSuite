@@ -251,13 +251,13 @@ begin
   // create new texture
   if not Assigned(result) then begin
     if (aCharImage.Width > TextureSize) or (aCharImage.Height > TextureSize) then
-      raise EtsRendererOpenGL.Create('char is to large to fit into a texture: ' + aChar.CharCode + ' (0x' + IntToHex(Ord(aChar.CharCode), 4) + ')');
+      raise EtsRendererOpenGL.Create('char is to large to fit into a texture: (0x' + IntToHex(Ord(aChar.CharCode), 4) + ')');
     tex    := CreateNewTexture;
     result := AddToTexture(tex);
   end;
 
   if not Assigned(result) then
-    raise EtsRendererOpenGL.Create('unable to creat render reference for char: ' + aChar.CharCode + ' (0x' + IntToHex(Ord(aChar.CharCode), 4) + ')');
+    raise EtsRendererOpenGL.Create('unable to creat render reference for char: (0x' + IntToHex(Ord(aChar.CharCode), 4) + ')');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -180,7 +180,6 @@ end;
 function TtsFontGeneratorFreeType.CreateFont(const aFace: FT_Face; const aRenderer: TtsRenderer; const aSize: Integer;
   const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont;
 var
-  face: FT_Face;
   err: FT_Error;
   prop: TtsFontProperties;
   os2: PTT_OS2;
