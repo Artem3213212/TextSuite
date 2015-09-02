@@ -74,7 +74,6 @@ end;
 function tsAnsiToWide(aDst: PWideChar; const aSize: Integer; aSrc: PAnsiChar;
   const aCodePage: TtsCodePage; const aDefaultChar: WideChar): Integer;
 begin
-  result := 0;
   case aCodePage of
     tsUTF8:
       result := tsUTF8ToWide(aDst, aSize, aSrc, aDefaultChar);

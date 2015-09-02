@@ -181,6 +181,7 @@ begin
     GL_DEBUG_TYPE_OTHER_ARB               : typ:= 'OTHER';
   end;
 
+  sv := svLow;
   case severity of
     GL_DEBUG_SEVERITY_LOW_ARB:    sv := svLow;
     GL_DEBUG_SEVERITY_MEDIUM_ARB: sv := svMedium;
@@ -207,6 +208,7 @@ begin
   end;
   src:= 'GL_' + src;
 
+  sv := svLow;
   case severity of
     GL_DEBUG_SEVERITY_LOW_AMD:    sv := svLow;
     GL_DEBUG_SEVERITY_MEDIUM_AMD: sv := svMedium;
@@ -288,17 +290,15 @@ end;
 
 class function TglcContext.GetPlatformClass: TglcContextClass;
 begin
-  Result := nil;
-  {$IFDEF WINDOWS}
+  {$IF DEFINED(WINDOWS)}
   Result:= TglcContextWGL;
-  {$ELSE}{$IFDEF WIN32}
+  {$ELSEIF DEFINED(WIN32)}
   Result:= TglcContextWGL;
-  {$ENDIF}{$ENDIF}
-  {$IFDEF LINUX}
+  {$ELSEIF DEFINED(LINUX)}  
   Result:= TglcContextGtk2GLX;
-  {$ENDIF}
-  if not Assigned(result) then
-    raise EGLError.Create('unable to find suitabe context class');
+  {$ELSE}
+  raise EGLError.Create('unable to find suitabe context class');
+  {$IFEND}
 end;
 
 class function TglcContext.IsAnyContextActive: boolean;

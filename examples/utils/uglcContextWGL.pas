@@ -157,7 +157,7 @@ var
     else if multiEXTSup then
       wglChoosePixelFormatEXT(tmpContext.FDC, @IAttrib[0], @FAttrib, MaxCount, pPFList, @Count);
 
-    if Count > length(PFList) then
+    if Integer(Count) > length(PFList) then
       Count := length(PFList);
 
     QueryAtrib := WGL_SAMPLES_ARB;

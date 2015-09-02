@@ -140,9 +140,9 @@ type
     fChars: array[Byte] of PtsFontCharArray;
     fCreateChars: Boolean;
 
-    function HasChar(const aCharCode: WideChar): Boolean;
+    //function HasChar(const aCharCode: WideChar): Boolean;
     function GetChar(const aCharCode: WideChar): TtsChar;
-    function GetCharCreate(const aCharCode: WideChar): TtsChar;
+    //function GetCharCreate(const aCharCode: WideChar): TtsChar;
     procedure AddChar(const aCharCode: WideChar; const aChar: TtsChar); overload;
   protected
     constructor Create(const aRenderer: TtsRenderer; const aGenerator: TtsFontGenerator; const aProperties: TtsFontProperties);
@@ -911,9 +911,9 @@ var
         // read color and clear channels
         v := 0;
         tsFormatUnmap(aSrc.Format, src, c);
-        for j := 0 to 3 do
-          if (TtsColorChannel(j) in aChannelMask) then
-            c.arr[j] := 0;
+        for i := 0 to 3 do
+          if (TtsColorChannel(i) in aChannelMask) then
+            c.arr[i] := 0;
 
         // do blur
         for i := 0 to aKernel.ItemCount-1 do with aKernel.Items[i] do begin
@@ -927,9 +927,9 @@ var
         end;
 
         // calc final color and write
-        for j := 0 to 3 do
+        for i := 0 to 3 do
           if (TtsColorChannel(i) in aChannelMask) then
-            c.arr[j] := c.arr[j] / v;
+            c.arr[i] := c.arr[i] / v;
         tsFormatMap(aDst.Format, dst, c);
       end;
     end;
@@ -978,10 +978,12 @@ end;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //TtsFont///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+{
 function TtsFont.HasChar(const aCharCode: WideChar): Boolean;
 begin
   result := Assigned(GetChar(aCharCode));
 end;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function TtsFont.GetChar(const aCharCode: WideChar): TtsChar;
@@ -996,12 +998,14 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+{
 function TtsFont.GetCharCreate(const aCharCode: WideChar): TtsChar;
 begin
   result := GetChar(aCharCode);
   if not Assigned(result) then
     result := AddChar(aCharCode);
 end;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 procedure TtsFont.AddChar(const aCharCode: WideChar; const aChar: TtsChar);
@@ -1664,7 +1668,6 @@ var
 
     else
       Dispose(p);
-      p := nil;
     end;
   end;
 

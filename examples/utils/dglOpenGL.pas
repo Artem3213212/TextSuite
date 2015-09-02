@@ -14877,8 +14877,6 @@ begin
   if LibHandle = nil then
     LibHandle := GL_LibHandle;
 
-  Result :=  nil;
-
   {$IFDEF DGL_WIN}
     Result := GetProcAddress({%H-}HMODULE(LibHandle), ProcName);
 

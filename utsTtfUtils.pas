@@ -16,10 +16,10 @@ const
   NAME_ID_FULL_NAME  = 4;
 
 function MakeTTTableName(const ch1, ch2, ch3, ch4: Char): Cardinal;
-function GetTTString(pBuffer: Pointer; BufferSize: Integer; NameID, LanguageID: Cardinal; var Text: AnsiString): Boolean;
+function GetTTString(pBuffer: Pointer; BufferSize: Integer; NameID, LanguageID: Cardinal; var Text: String): Boolean;
 
-function GetTTFontFullNameFromStream(Stream: TStream; LanguageID: Cardinal): AnsiString;
-function GetTTFontFullNameFromFile(Filename: AnsiString; LanguageID: Cardinal): AnsiString;
+function GetTTFontFullNameFromStream(Stream: TStream; LanguageID: Cardinal): String;
+function GetTTFontFullNameFromFile(const aFilename: String; const aLanguageID: Cardinal): String;
 
 implementation
 
@@ -141,7 +141,7 @@ begin
   Result := ord(ch4) shl 24 or ord(ch3) shl 16 or ord(ch2) shl 8 or ord(ch1);
 end;
 
-function GetTTString(pBuffer: Pointer; BufferSize: Integer; NameID, LanguageID: Cardinal; var Text: AnsiString): Boolean;
+function GetTTString(pBuffer: Pointer; BufferSize: Integer; NameID, LanguageID: Cardinal; var Text: String): Boolean;
 var
   pActBuffer: pByte;
   ttNTHeader: TT_NAME_TABLE_HEADER;
@@ -287,7 +287,7 @@ begin
   end;
 end;
 
-function GetTTFontFullNameFromStream(Stream: TStream; LanguageID: Cardinal): AnsiString;
+function GetTTFontFullNameFromStream(Stream: TStream; LanguageID: Cardinal): String;
 var
   TableName: Cardinal;
   Buffer: Pointer;
@@ -309,13 +309,13 @@ begin
   end;
 end;
 
-function GetTTFontFullNameFromFile(Filename: AnsiString; LanguageID: Cardinal): AnsiString;
+function GetTTFontFullNameFromFile(const aFilename: String; const aLanguageID: Cardinal): String;
 var
   fs: TFileStream;
 begin
-  fs := TFileStream.Create(String(Filename), fmOpenRead or fmShareDenyWrite);
+  fs := TFileStream.Create(aFilename, fmOpenRead or fmShareDenyWrite);
   try
-    result := GetTTFontFullNameFromStream(fs, LanguageID);
+    result := GetTTFontFullNameFromStream(fs, aLanguageID);
   finally
     fs.Free;
   end;

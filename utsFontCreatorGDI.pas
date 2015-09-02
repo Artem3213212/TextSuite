@@ -123,9 +123,9 @@ end;
 procedure TtsFontRegistrationFile.UnregisterFont;
 begin
   if Assigned(RemoveFontResourceExA) then
-    RemoveFontResourceExA(PAnsiChar(fFilename), 0, nil)
+    RemoveFontResourceExA(PAnsiChar(AnsiString(fFilename)), 0, nil)
   else if Assigned(RemoveFontResourceA) then
-    RemoveFontResourceA(PAnsiChar(fFilename));
+    RemoveFontResourceA(PAnsiChar(AnsiString(fFilename)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -143,9 +143,9 @@ begin
 
   // register font
   if Assigned(AddFontResourceExA) then
-    fIsRegistered := (AddFontResourceExA(PAnsiChar(fFilename), 0, nil) > 0)
+    fIsRegistered := (AddFontResourceExA(PAnsiChar(AnsiString(fFilename)), 0, nil) > 0)
   else if Assigned(AddFontResourceA) then
-    fIsRegistered := (AddFontResourceA(PAnsiChar(fFilename)) > 0)
+    fIsRegistered := (AddFontResourceA(PAnsiChar(AnsiString(fFilename))) > 0)
   else
     fIsRegistered := false;
 end;
@@ -295,7 +295,7 @@ begin
       exit;
     w    := Metric.gmBlackBoxX;
     h    := Metric.gmBlackBoxY;
-    srcW := (Size div h) * 8;
+    srcW := (Integer(Size) div h) * 8;
     if (w <= 0) or (h <= 0) then
       exit;
     aImage.CreateEmpty(aFont.Renderer.Format, w, h);
@@ -316,7 +316,8 @@ end;
 procedure TtsFontGeneratorGDI.GetCharImageAANormal(const aDC: HDC; const aFont: TtsFontGDI; const aCharCode: WideChar; const aImage: TtsImage);
 var
   Metric: TGlyphMetrics;
-  GlyphIndex, OutlineRes, tmp, Spacer, x, y, w, h: Integer;
+  OutlineRes: DWORD;
+  GlyphIndex, tmp, Spacer, x, y, w, h: Integer;
   Size: Cardinal;
   Buffer, pSrc, pDst: PByte;
 
@@ -390,7 +391,7 @@ var
   DC: HDC;
   TableName, BufSize: Cardinal;
   Buffer: PByte;
-  Lang: AnsiString;
+  Lang, tmpName: AnsiString;
   TextMetric: TTextMetricW;
   OutlineMetric: TOutlineTextmetricW;
 
@@ -403,8 +404,6 @@ var
   end;
 
 begin
-  result := 0;
-
   FillChar(aProperties, SizeOf(aProperties), #0);
   aProperties.Size         := aSize;
   aProperties.Style        := aStyle;
@@ -413,8 +412,9 @@ begin
 
   // prepare font attribs
   FillChar(LogFont, SizeOf(LogFont), #0);
+  tmpName := AnsiString(aFontname);
   for i := 1 to min(Length(aFontname), Length(LogFont.lfFaceName)) do
-    LogFont.lfFaceName[i-1] := aFontname[i];
+    LogFont.lfFaceName[i-1] := tmpName[i];
   LogFont.lfCharSet   := DEFAULT_CHARSET;
   LogFont.lfHeight    := -aSize;
   LogFont.lfWeight    := _(tsStyleBold      in aStyle, FW_BOLD, FW_NORMAL);

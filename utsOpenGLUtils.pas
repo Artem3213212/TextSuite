@@ -279,6 +279,7 @@ var
   var
     w, h: Integer;
   begin
+    result := false;
     w := X2 - X1;
     h := Y2 - Y1;
     if not Assigned(aItem) or

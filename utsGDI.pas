@@ -242,7 +242,7 @@ procedure InitGDI;
 
   function GetProcAddr(const aLibHandle: TLibHandle; const aName: String): Pointer;
   begin
-    result := GetProcAddress(aLibHandle, PAnsiChar(aName));
+    result := GetProcAddress(aLibHandle, PAnsiChar(AnsiString(aName)));
     if not Assigned(result) then
       raise EtsException.Create('unable to load procedure from library: ' + aName);
   end;
