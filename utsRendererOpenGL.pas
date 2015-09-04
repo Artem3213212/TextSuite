@@ -137,12 +137,22 @@ begin
   fIsRendering := true;
   glPushMatrix;
   glColor4fv(@Color.arr[0]);
+
+  glBindBuffer(GL_ARRAY_BUFFER, fVBO);
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glVertexPointer(2, GL_FLOAT, SizeOf(TVertex), Pointer(0));
+  glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+  glTexCoordPointer(2, GL_FLOAT, SizeOf(TVertex), Pointer(8));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 procedure TtsRendererOpenGL.EndRender;
 begin
   if fIsRendering then begin
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
     glPopMatrix;
     fIsRendering := false;
   end;
@@ -198,16 +208,7 @@ begin
     end else
       glMultMatrixf(@ref.VertMat[0, 0]);
 
-    glBindBuffer(GL_ARRAY_BUFFER, fVBO);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(2, GL_FLOAT, SizeOf(TVertex), Pointer(0));
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    glTexCoordPointer(2, GL_FLOAT, SizeOf(TVertex), Pointer(8));
-
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glDisableClientState(GL_VERTEX_ARRAY);
 
     glMatrixMode(GL_TEXTURE);
     glPopMatrix;
