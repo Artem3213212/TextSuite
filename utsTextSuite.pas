@@ -140,9 +140,7 @@ type
     fChars: array[Byte] of PtsFontCharArray;
     fCreateChars: Boolean;
 
-    //function HasChar(const aCharCode: WideChar): Boolean;
     function GetChar(const aCharCode: WideChar): TtsChar;
-    //function GetCharCreate(const aCharCode: WideChar): TtsChar;
     procedure AddChar(const aCharCode: WideChar; const aChar: TtsChar); overload;
   protected
     {%H-}constructor Create(const aRenderer: TtsRenderer; const aGenerator: TtsFontGenerator; const aProperties: TtsFontProperties);
@@ -265,6 +263,9 @@ type
       );
       tsItemTypeSpacing: (
         Spacing: Integer;
+      );
+      tsItemTypeTab: (
+        TabWidth: Integer; // with of tab (in pixel)
       );
   end;
 
@@ -978,14 +979,6 @@ end;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //TtsFont///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-{
-function TtsFont.HasChar(const aCharCode: WideChar): Boolean;
-begin
-  result := Assigned(GetChar(aCharCode));
-end;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function TtsFont.GetChar(const aCharCode: WideChar): TtsChar;
 var
   Chars: PtsFontCharArray;
@@ -996,16 +989,6 @@ begin
   else
     result := nil;
 end;
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-{
-function TtsFont.GetCharCreate(const aCharCode: WideChar): TtsChar;
-begin
-  result := GetChar(aCharCode);
-  if not Assigned(result) then
-    result := AddChar(aCharCode);
-end;
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 procedure TtsFont.AddChar(const aCharCode: WideChar; const aChar: TtsChar);
@@ -1036,7 +1019,7 @@ begin
   fGenerator    := aGenerator;
   fProperties   := aProperties;
   fCharSpacing  := 0;
-  fTabWidth     := 0;
+  fTabWidth     := 1;
   fLineSpacing  := 0.0;
   fCreateChars  := true;
   fGenerator.RegisterFont(self);
@@ -1550,6 +1533,8 @@ begin
       fLastLine^.meta.Width := fLastLine^.meta.Width + aItem^.TextWidth;
     tsItemTypeSpacing:
       fLastLine^.meta.Width := fLastLine^.meta.Width + aItem^.Spacing;
+    tsItemTypeTab:
+      fLastLine^.meta.Width := fLastLine^.meta.Width + aItem^.TabWidth;
   end;
   result := true;
 end;
@@ -1646,9 +1631,8 @@ var
 
     case State of
       tsItemTypeText, tsItemTypeSpace: begin
-        p^.Text    := tsStrAlloc(TextLength);
-        TextLength := 0;
-        Text       := p^.Text;
+        p^.Text := tsStrAlloc(TextLength);
+        Text    := p^.Text;
         while (TextBegin <> aText) do begin
           Text^ := TextBegin^;
           inc(Text,      1);
@@ -1657,18 +1641,15 @@ var
         AddItem(p);
       end;
 
-      tsItemTypeLineBreak: begin
-        AddItem(p);
-        TextBegin := aText;
-      end;
-
-      tsItemTypeTab: begin
+      tsItemTypeLineBreak, tsItemTypeTab: begin
         AddItem(p);
       end;
 
     else
       Dispose(p);
     end;
+    TextBegin  := aText;
+    TextLength := 0;
   end;
 
 begin
@@ -1702,8 +1683,7 @@ begin
 
       // tabulator
       #$0009: begin
-        if (State <> tsItemTypeTab) then
-          ExtractWord;
+        ExtractWord;
         State := tsItemTypeTab;
       end;
 
@@ -1725,6 +1705,7 @@ end;
 function TtsTextBlock.SplitIntoLines(aItem: PtsLineItem): Boolean;
 var
   p: PtsLineItem;
+  tab: Integer;
 begin
   result := false;
   if not Assigned(fCurrentFont) then
@@ -1779,6 +1760,8 @@ begin
       end;
 
       tsItemTypeTab: begin
+        tab := fCurrentFont.TabWidth * fCurrentFont.Properties.Size;
+        p^.TabWidth := (1 + fLastLine^.meta.Width div tab) * tab - fLastLine^.meta.Width;
         if not PushLineItem(p) then
           FreeLineItem(p);
       end;
@@ -2102,7 +2085,9 @@ var
         // get current x pos and round it to TabWidth
         pos := GetDrawPos;
         tab := font.TabWidth * font.Properties.Size;
-        pos.x := Ceil(pos.x * tab) div tab;
+        if (tab = 0) then
+          tab := 1;
+        pos.x := aBlock.Left + (1 + (pos.x - aBlock.Left) div tab) * tab;
         SetDrawPos(pos.x, pos.y);
       end;
 
