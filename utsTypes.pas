@@ -10,6 +10,7 @@ uses
   Classes, SysUtils;
 
 type
+  {$Z4}
   TtsCodePage = (
     tsUTF8,
     tsISO_8859_1,

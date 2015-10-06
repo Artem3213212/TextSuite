@@ -405,7 +405,7 @@ type
   private
     fCodePage: TtsCodePage;
     fCodePageDefault: WideChar;
-
+  protected
     fRenderers: TObjectList;
     fGenerators: TObjectList;
   private
