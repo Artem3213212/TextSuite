@@ -1,15 +1,14 @@
 unit utsRendererOpenGLES;
 
 {$IFDEF FPC}
-{$mode delphi}{$H+}
+  {$mode objfpc}{$H+}
 {$ENDIF}
-{.$DEFINE DEBUG}
 
 interface
 
 uses
-  Classes, SysUtils,
-  utsTextSuite, utsTypes, utsOpenGLUtils, dglOpenGLES;
+  Classes, SysUtils, dglOpenGLES,
+  utsOpenGLUtils, utsTypes, utsContext, utsImage;
 
 type
   TtsRendererOpenGLES = class(TtsBaseOpenGL)
@@ -36,15 +35,14 @@ type
   protected
     function  CreateNewTexture: PtsFontTexture; override;
     procedure FreeTexture(var aTexture: PtsFontTexture); override;
-    procedure UploadTexData(const aCharRef: TtsCharRenderRefOpenGL;
-      const aCharImage: TtsImage; const X, Y: Integer); override;
+    procedure UploadTexData(const aCharRef: TtsOpenGLRenderRef; const aCharImage: TtsImage; const X, Y: Integer); override;
 
     procedure BeginRender; override;
 
-    procedure SetDrawPos(const X, Y: Integer); override;
-    procedure MoveDrawPos(const X, Y: Integer); override;
-    procedure SetColor(const aColor: TtsColor4f); override;
-    procedure Render(const aCharRef: TtsCharRenderRef; const aForcedWidth: Integer); override;
+    procedure SetDrawPos(const aValue: TtsPosition); override;
+    procedure MoveDrawPos(const aOffset: TtsPosition); override;
+    procedure SetColor(const aValue: TtsColor4f); override;
+    procedure Render(const aRenderRef: TtsRenderRef; const aForcedWidth: Integer = 0); override;
   public
     property ShaderProgram:    GLuint      read fShaderProgram   write SetShaderProgram;
     property ProjectionMatrix: TtsMatrix4f read fProjMatrix      write SetProjectionMatrix;
@@ -55,6 +53,9 @@ type
   end;
 
 implementation
+
+uses
+  utsUtils, utsConstants;
 
 type
   TVertex = packed record
@@ -316,7 +317,8 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsRendererOpenGLES.UploadTexData(const aCharRef: TtsCharRenderRefOpenGL; const aCharImage: TtsImage; const X, Y: Integer);
+procedure TtsRendererOpenGLES.UploadTexData(const aCharRef: TtsOpenGLRenderRef; const aCharImage: TtsImage; const X,
+  Y: Integer);
 begin
   glBindTexture(GL_TEXTURE_2D, aCharRef.TextureID);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
@@ -335,34 +337,34 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsRendererOpenGLES.SetDrawPos(const X, Y: Integer);
+procedure TtsRendererOpenGLES.SetDrawPos(const aValue: TtsPosition);
 begin
-  inherited SetDrawPos(X, Y);
+  inherited SetDrawPos(aValue);
   UpdateUniformCharOffset;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsRendererOpenGLES.MoveDrawPos(const X, Y: Integer);
+procedure TtsRendererOpenGLES.MoveDrawPos(const aOffset: TtsPosition);
 begin
-  inherited MoveDrawPos(X, Y);
+  inherited MoveDrawPos(aOffset);
   UpdateUniformCharOffset;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsRendererOpenGLES.SetColor(const aColor: TtsColor4f);
+procedure TtsRendererOpenGLES.SetColor(const aValue: TtsColor4f);
 begin
-  inherited SetColor(aColor);
+  inherited SetColor(aValue);
   glColor4f(Color.r, Color.g, Color.b, Color.a);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsRendererOpenGLES.Render(const aCharRef: TtsCharRenderRef; const aForcedWidth: Integer);
+procedure TtsRendererOpenGLES.Render(const aRenderRef: TtsRenderRef; const aForcedWidth: Integer);
 var
-  ref: TtsCharRenderRefOpenGL;
+  ref: TtsOpenGLRenderRef;
   m: TtsMatrix4f;
 begin
-  if Assigned(aCharRef) and (aCharRef is TtsCharRenderRefOpenGL) then begin
-    ref := (aCharRef as TtsCharRenderRefOpenGL);
+  if Assigned(aRenderRef) then begin
+    ref := TtsOpenGLRenderRef(aRenderRef);
 
     glBindTexture(GL_TEXTURE_2D, ref.TextureID);
     glBindBuffer(GL_ARRAY_BUFFER, fVBO);
@@ -424,3 +426,4 @@ begin
 end;
 
 end.
+

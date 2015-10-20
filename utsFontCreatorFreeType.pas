@@ -1,14 +1,14 @@
 unit utsFontCreatorFreeType;
 
 {$IFDEF FPC}
-{$mode delphi}{$H+}
+  {$mode objfpc}{$H+}
 {$ENDIF}
 
 interface
 
 uses
   Classes, SysUtils,
-  utsTextSuite, utsTypes, utsFreeType;
+  utsFreeType, utsFontCreator, utsFont, utsTypes, utsImage, utsContext;
 
 type
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -24,31 +24,25 @@ type
   TtsFontFreeType = class(TtsFont)
   private
     fHandle: TtsFreeTypeFaceHandle;
+  protected
+    {%H-}constructor Create(const aHandle: TtsFreeTypeFaceHandle; const aCreator: TtsFontCreator; const aMetric: TtsFontMetric);
   public
-    constructor Create(const aHandle: TtsFreeTypeFaceHandle; const aRenderer: TtsRenderer;
-      const aGenerator: TtsFontGenerator; const aProperties: TtsFontProperties);
+    procedure GetCharImage(const aCharCode: WideChar; const aCharImage: TtsImage; const aFormat: TtsFormat); override;
+    function GetGlyphMetrics(const aCharCode: WideChar; out aGlyphOrigin, aGlyphSize: TtsPosition; out aAdvance: Integer): Boolean; override;
+
     destructor Destroy; override;
   end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  TtsFontGeneratorFreeType = class(TtsFontGenerator)
+  TtsFontCreatorFreeType = class(TtsFontCreator)
   private
     fHandle: FT_Library;
 
-    function ConvertFont(const aFont: TtsFont): TtsFontFreeType;
-    procedure LoadNames(const aFace: FT_Face; var aProperties: TtsFontProperties);
-    function CreateFont(const aFace: FT_Face; const aRenderer: TtsRenderer; const aSize: Integer;
-      const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont;
-  protected
-    function GetGlyphMetrics(const aFont: TtsFont; const aCharCode: WideChar;
-      out aGlyphOrigin, aGlyphSize: TtsPosition; out aAdvance: Integer): Boolean; override;
-    procedure GetCharImage(const aFont: TtsFont; const aCharCode: WideChar;
-      const aCharImage: TtsImage); override;
+    procedure LoadNames(const aFace: FT_Face; var aMetric: TtsFontMetric);
+    function CreateFont(const aFace: FT_Face; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont;
   public
-    function GetFontByFile(const aFilename: String; const aRenderer: TtsRenderer; const aSize: Integer;
-      const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload;
-    function GetFontByStream(const aStream: TStream;  const aRenderer: TtsRenderer; const aSize: Integer;
-      const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload;
+    function GetFontByFile(const aFilename: String; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload;
+    function GetFontByStream(const aStream: TStream; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload;
 
     constructor Create(const aContext: TtsContext);
     destructor Destroy; override;
@@ -57,7 +51,8 @@ type
 implementation
 
 uses
-  utsUtils, math;
+  Math,
+  utsUtils;
 
 const
   FT_SIZE_FACTOR  = 64;
@@ -82,11 +77,137 @@ end;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //TtsFontFreeType///////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-constructor TtsFontFreeType.Create(const aHandle: TtsFreeTypeFaceHandle; const aRenderer: TtsRenderer;
-  const aGenerator: TtsFontGenerator; const aProperties: TtsFontProperties);
+constructor TtsFontFreeType.Create(const aHandle: TtsFreeTypeFaceHandle; const aCreator: TtsFontCreator; const aMetric: TtsFontMetric);
 begin
-  inherited Create(aRenderer, aGenerator, aProperties);
+  inherited Create(aCreator, aMetric);
   fHandle := aHandle;
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+procedure TtsFontFreeType.GetCharImage(const aCharCode: WideChar; const aCharImage: TtsImage; const aFormat: TtsFormat);
+var
+  err: FT_Error;
+  g: FT_GlyphSlot;
+  b: PFT_Bitmap;
+
+  procedure CopyGray;
+  var
+    x, y: Integer;
+    src, dst: PByte;
+    c: TtsColor4f;
+  begin
+    aCharImage.CreateEmpty(aFormat, b^.width, b^.rows);
+    c := tsColor4f(1, 1, 1, 1);
+    for y := 0 to b^.rows-1 do begin
+      src := b^.buffer;
+      inc(src, y * b^.pitch);
+      dst := aCharImage.Scanline[y];
+      for x := 0 to b^.width-1 do begin
+        c.a := src^ / $FF;
+        inc(src, 1);
+        tsFormatMap(aCharImage.Format, dst, c);
+      end;
+    end;
+  end;
+
+  procedure CopyMono;
+  var
+    x, y, i, cnt: Integer;
+    src, dst: PByte;
+    tmp: Byte;
+    c: TtsColor4f;
+  begin
+    aCharImage.CreateEmpty(aFormat, b^.width, b^.rows);
+    c := tsColor4f(1, 1, 1, 1);
+    for y := 0 to b^.rows-1 do begin
+      src := b^.buffer;
+      inc(src, y * b^.pitch);
+      dst := aCharImage.Scanline[y];
+      x := b^.width;
+      while (x > 0) do begin
+        cnt := min(8, x);
+        tmp := src^;
+        inc(src, 1);
+        for i := 1 to cnt do begin
+          if ((tmp and $80) > 0) then
+            c.a := 1.0
+          else
+            c.a := 0.0;
+          tmp := (tmp and not $80) shl 1;
+          tsFormatMap(aCharImage.Format, dst, c);
+        end;
+        dec(x, cnt);
+      end;
+    end;
+  end;
+
+begin
+  g := fHandle.fFace^.glyph;
+
+  if not (Metric.AntiAliasing in [tsAANormal, tsAANone]) then
+    raise Exception.Create('unknown anti aliasing');
+  case Metric.AntiAliasing of
+    tsAANormal:
+      err := FT_Load_Char(fHandle.fFace, Ord(aCharCode), FT_LOAD_DEFAULT or FT_LOAD_RENDER);
+    tsAANone:
+      err := FT_Load_Char(fHandle.fFace, Ord(aCharCode), FT_LOAD_MONOCHROME or FT_LOAD_TARGET_MONO or FT_LOAD_RENDER);
+  else
+    exit;
+  end;
+  if (err <> 0) then
+    raise EtsException.Create('unable to set glyph metrix: error=' + IntToStr(err));
+  if (g^.format <> FT_GLYPH_FORMAT_BITMAP) then
+    raise EtsException.Create('invalid glyph format');
+
+  b := @g^.bitmap;
+  case b^.pixel_mode of
+    FT_PIXEL_MODE_MONO:
+      CopyMono;
+    FT_PIXEL_MODE_GRAY:
+      CopyGray;
+  else
+    raise EtsException.Create('unknown glyph bitmap format');
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function TtsFontFreeType.GetGlyphMetrics(const aCharCode: WideChar; out aGlyphOrigin, aGlyphSize: TtsPosition; out aAdvance: Integer): Boolean;
+var
+  err: FT_Error;
+begin
+  result := false;
+
+  aGlyphOrigin.x := 0;
+  aGlyphOrigin.x := 0;
+  aGlyphSize.x   := 0;
+  aGlyphSize.y   := 0;
+  aAdvance       := 0;
+
+  case Metric.AntiAliasing of
+    tsAANormal:
+      err := FT_Load_Char(fHandle.fFace, Ord(aCharCode), FT_LOAD_DEFAULT);
+    tsAANone:
+      err := FT_Load_Char(fHandle.fFace, Ord(aCharCode), FT_LOAD_MONOCHROME);
+  else
+    raise EtsException.Create('unknown anti aliasing');
+  end;
+  case err of
+    FT_ERR_None:
+      { nop };
+    FT_ERR_Invalid_Character_Code:
+      exit;
+  else
+    raise EtsException.Create('unable to set glyph metrix: error=' + IntToStr(err));
+  end;
+
+  result := true;
+  with fHandle.fFace^.glyph^.metrics do begin
+    aAdvance        := horiAdvance  div FT_SIZE_FACTOR;
+    aGlyphOrigin.x  := horiBearingX div FT_SIZE_FACTOR;
+    aGlyphOrigin.y  := horiBearingY div FT_SIZE_FACTOR;
+    aGlyphSize.x    := width        div FT_SIZE_FACTOR;
+    aGlyphSize.y    := height       div FT_SIZE_FACTOR;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,17 +218,9 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//TtsFontGeneratorFreeType//////////////////////////////////////////////////////////////////////////////////////////////
+//TtsFontCreatorFreeType//////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-function TtsFontGeneratorFreeType.ConvertFont(const aFont: TtsFont): TtsFontFreeType;
-begin
-  if not (aFont is TtsFontFreeType) then
-    raise EtsException.Create('aFont need to be a TtsFontGDI object');
-  result := (aFont as TtsFontFreeType);
-end;
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsFontGeneratorFreeType.LoadNames(const aFace: FT_Face; var aProperties: TtsFontProperties);
+procedure TtsFontCreatorFreeType.LoadNames(const aFace: FT_Face; var aMetric: TtsFontMetric);
 var
   i, cnt: FT_Int;
   err: FT_Error;
@@ -162,26 +275,26 @@ begin
 
     case name.name_id of
       TT_NAME_ID_COPYRIGHT:
-        if (aProperties.Copyright = '') then
-          aProperties.Copyright := Decode;
+        if (aMetric.Copyright = '') then
+          aMetric.Copyright := Decode;
 
       TT_NAME_ID_FONT_FAMILY:
-        if (aProperties.Fontname = '') then
-          aProperties.Fontname := Decode;
+        if (aMetric.Fontname = '') then
+          aMetric.Fontname := Decode;
 
       TT_NAME_ID_FULL_NAME:
-        if (aProperties.FullName = '') then
-          aProperties.FullName := Decode;
+        if (aMetric.FullName = '') then
+          aMetric.FullName := Decode;
     end;
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-function TtsFontGeneratorFreeType.CreateFont(const aFace: FT_Face; const aRenderer: TtsRenderer; const aSize: Integer;
-  const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont;
+function TtsFontCreatorFreeType.CreateFont(const aFace: FT_Face; const aSize: Integer; const aStyle: TtsFontStyles;
+  const aAntiAliasing: TtsAntiAliasing): TtsFont;
 var
   err: FT_Error;
-  prop: TtsFontProperties;
+  metric: TtsFontMetric;
   os2: PTT_OS2;
   hz: PTT_HoriHeader;
 begin
@@ -189,173 +302,45 @@ begin
   if (err <> 0) then
     raise EtsException.Create('unable to set char size: error=' + IntToStr(err));
 
-  FillByte(prop{%H-}, SizeOf(prop), 0);
-  prop.AntiAliasing := tsAANormal;
-  prop.FaceName     := aFace^.family_name;
-  prop.StyleName    := aFace^.style_name;
-  LoadNames(aFace, prop);
+  FillChar(metric{%H-}, SizeOf(metric), #0);
+  metric.AntiAliasing := tsAANormal;
+  metric.FaceName     := String(aFace^.family_name);
+  metric.StyleName    := String(aFace^.style_name);
+  LoadNames(aFace, metric);
 
-  prop.Size         := aSize;
-  prop.AntiAliasing := aAntiAliasing;
-  prop.DefaultChar  := '?';
-  prop.Style        := aStyle + [tsStyleBold, tsStyleItalic];
+  metric.Size         := aSize;
+  metric.AntiAliasing := aAntiAliasing;
+  metric.DefaultChar  := '?';
+  metric.Style        := aStyle + [tsStyleBold, tsStyleItalic];
   if ((aFace^.style_flags and FT_STYLE_FLAG_BOLD) = 0) then
-    Exclude(prop.Style, tsStyleBold);
+    Exclude(metric.Style, tsStyleBold);
   if ((aFace^.style_flags and FT_STYLE_FLAG_ITALIC) = 0) then
-    Exclude(prop.Style, tsStyleItalic);
+    Exclude(metric.Style, tsStyleItalic);
 
-  prop.Ascent           :=  aFace^.size^.metrics.ascender  div FT_SIZE_FACTOR;
-  prop.Descent          := -aFace^.size^.metrics.descender div FT_SIZE_FACTOR;
-  prop.ExternalLeading  := 0;
-  prop.BaseLineOffset   := 0;
+  metric.Ascent           :=  aFace^.size^.metrics.ascender  div FT_SIZE_FACTOR;
+  metric.Descent          := -aFace^.size^.metrics.descender div FT_SIZE_FACTOR;
+  metric.ExternalLeading  := 0;
+  metric.BaseLineOffset   := 0;
 
-  prop.UnderlinePos  := aFace^.underline_position  div FT_SIZE_FACTOR;
-  prop.UnderlineSize := aFace^.underline_thickness div FT_SIZE_FACTOR;
+  metric.UnderlinePos  := aFace^.underline_position  div FT_SIZE_FACTOR;
+  metric.UnderlineSize := aFace^.underline_thickness div FT_SIZE_FACTOR;
 
   os2 := PTT_OS2(FT_Get_Sfnt_Table(aFace, FT_SFNT_OS2));
   if Assigned(os2) and (os2^.version <> $FFFF) then begin
-    prop.StrikeoutPos  := os2^.yStrikeoutPosition div FT_SIZE_FACTOR;
-    prop.StrikeoutSize := os2^.yStrikeoutSize     div FT_SIZE_FACTOR;
+    metric.StrikeoutPos  := os2^.yStrikeoutPosition div FT_SIZE_FACTOR;
+    metric.StrikeoutSize := os2^.yStrikeoutSize     div FT_SIZE_FACTOR;
   end;
 
   hz := PTT_HoriHeader(FT_Get_Sfnt_Table(aFace, FT_SFNT_HHEA));
   if Assigned(hz) then begin
-    prop.ExternalLeading := hz^.Line_Gap div FT_SIZE_FACTOR;
+    metric.ExternalLeading := hz^.Line_Gap div FT_SIZE_FACTOR;
   end;
 
-  result := TtsFontFreeType.Create(TtsFreeTypeFaceHandle.Create(aFace), aRenderer, self, prop);
+  result := TtsFontFreeType.Create(TtsFreeTypeFaceHandle.Create(aFace), self, metric);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-function TtsFontGeneratorFreeType.GetGlyphMetrics(const aFont: TtsFont; const aCharCode: WideChar; out aGlyphOrigin, aGlyphSize: TtsPosition; out aAdvance: Integer): Boolean;
-var
-  font: TtsFontFreeType;
-  err: FT_Error;
-begin
-  result := false;
-
-  aGlyphOrigin.x := 0;
-  aGlyphOrigin.x := 0;
-  aGlyphSize.x   := 0;
-  aGlyphSize.y   := 0;
-  aAdvance       := 0;
-
-  font := ConvertFont(aFont);
-  case font.Properties.AntiAliasing of
-    tsAANormal:
-      err := FT_Load_Char(font.fHandle.fFace, Ord(aCharCode), FT_LOAD_DEFAULT);
-    tsAANone:
-      err := FT_Load_Char(font.fHandle.fFace, Ord(aCharCode), FT_LOAD_MONOCHROME);
-  else
-    raise EtsException.Create('unknown anti aliasing');
-  end;
-  case err of
-    FT_ERR_None:
-      { nop };
-    FT_ERR_Invalid_Character_Code:
-      exit;
-  else
-    raise EtsException.Create('unable to set glyph metrix: error=' + IntToStr(err));
-  end;
-
-  result := true;
-  with font.fHandle.fFace^.glyph^.metrics do begin
-    aAdvance        := horiAdvance  div FT_SIZE_FACTOR;
-    aGlyphOrigin.x  := horiBearingX div FT_SIZE_FACTOR;
-    aGlyphOrigin.y  := horiBearingY div FT_SIZE_FACTOR;
-    aGlyphSize.x    := width        div FT_SIZE_FACTOR;
-    aGlyphSize.y    := height       div FT_SIZE_FACTOR;
-  end;
-end;
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsFontGeneratorFreeType.GetCharImage(const aFont: TtsFont; const aCharCode: WideChar; const aCharImage: TtsImage);
-var
-  font: TtsFontFreeType;
-  err: FT_Error;
-  g: FT_GlyphSlot;
-  b: PFT_Bitmap;
-
-  procedure CopyGray;
-  var
-    x, y: Integer;
-    src, dst: PByte;
-    c: TtsColor4f;
-  begin
-    aCharImage.CreateEmpty(font.Renderer.Format, b^.width, b^.rows);
-    c := tsColor4f(1, 1, 1, 1);
-    for y := 0 to b^.rows-1 do begin
-      src := b^.buffer + y * b^.pitch;
-      dst := aCharImage.Scanline[y];
-      for x := 0 to b^.width-1 do begin
-        c.a := src^ / $FF;
-        inc(src, 1);
-        tsFormatMap(aCharImage.Format, dst, c);
-      end;
-    end;
-  end;
-
-  procedure CopyMono;
-  var
-    x, y, i, cnt: Integer;
-    src, dst: PByte;
-    tmp: Byte;
-    c: TtsColor4f;
-  begin
-    aCharImage.CreateEmpty(font.Renderer.Format, b^.width, b^.rows);
-    c := tsColor4f(1, 1, 1, 1);
-    for y := 0 to b^.rows-1 do begin
-      src := b^.buffer + y * b^.pitch;
-      dst := aCharImage.Scanline[y];
-      x := b^.width;
-      while (x > 0) do begin
-        cnt := min(8, x);
-        tmp := src^;
-        inc(src, 1);
-        for i := 1 to cnt do begin
-          if ((tmp and $80) > 0) then
-            c.a := 1.0
-          else
-            c.a := 0.0;
-          tmp := (tmp and not $80) shl 1;
-          tsFormatMap(aCharImage.Format, dst, c);
-        end;
-        dec(x, cnt);
-      end;
-    end;
-  end;
-
-begin
-  font := ConvertFont(aFont);
-  g := font.fHandle.fFace^.glyph;
-
-  if not (font.Properties.AntiAliasing in [tsAANormal, tsAANone]) then
-    raise Exception.Create('unknown anti aliasing');
-  case font.Properties.AntiAliasing of
-    tsAANormal:
-      err := FT_Load_Char(font.fHandle.fFace, Ord(aCharCode), FT_LOAD_DEFAULT or FT_LOAD_RENDER);
-    tsAANone:
-      err := FT_Load_Char(font.fHandle.fFace, Ord(aCharCode), FT_LOAD_MONOCHROME or FT_LOAD_TARGET_MONO or FT_LOAD_RENDER);
-  end;
-  if (err <> 0) then
-    raise EtsException.Create('unable to set glyph metrix: error=' + IntToStr(err));
-  if (g^.format <> FT_GLYPH_FORMAT_BITMAP) then
-    raise EtsException.Create('invalid glyph format');
-
-  b := @g^.bitmap;
-  case b^.pixel_mode of
-    FT_PIXEL_MODE_MONO:
-      CopyMono;
-    FT_PIXEL_MODE_GRAY:
-      CopyGray;
-  else
-    raise EtsException.Create('unknown glyph bitmap format');
-  end;
-end;
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-function TtsFontGeneratorFreeType.GetFontByFile(const aFilename: String; const aRenderer: TtsRenderer;
-  const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont;
+function TtsFontCreatorFreeType.GetFontByFile(const aFilename: String; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont;
 var
   face: FT_Face;
   err: FT_Error;
@@ -363,20 +348,22 @@ begin
   err := FT_New_Face(fHandle, PAnsiChar(aFilename), 0, @face);
   if (err <> 0) then
     raise EtsException.Create('unable to create free type face from file: ' + aFilename + ' error=' + IntToStr(err));
-  result := CreateFont(face, aRenderer, aSize, aStyle, aAntiAliasing);
+  result := CreateFont(face, aSize, aStyle, aAntiAliasing);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-function TtsFontGeneratorFreeType.GetFontByStream(const aStream: TStream; const aRenderer: TtsRenderer;
-  const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont;
+function TtsFontCreatorFreeType.GetFontByStream(const aStream: TStream; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont;
 var
   face: FT_Face;
   err: FT_Error;
   ms: TMemoryStream;
+  p: PBYte;
 begin
   if (aStream is TMemoryStream) then begin
     ms := (aStream as TMemoryStream);
-    err := FT_New_Memory_Face(fHandle, PByte(ms.Memory) + ms.Position, ms.Size - ms.Position, 0, @face);
+    p := ms.Memory;
+    inc(p, ms.Position);
+    err := FT_New_Memory_Face(fHandle, p, ms.Size - ms.Position, 0, @face);
   end else begin
     ms := TMemoryStream.Create;
     try
@@ -388,18 +375,18 @@ begin
   end;
   if (err <> 0) then
     raise EtsException.Create('unable to create free type face from stream: error=' + IntToStr(err));
-  result := CreateFont(face, aRenderer, aSize, aStyle, aAntiAliasing);
+  result := CreateFont(face, aSize, aStyle, aAntiAliasing);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-constructor TtsFontGeneratorFreeType.Create(const aContext: TtsContext);
+constructor TtsFontCreatorFreeType.Create(const aContext: TtsContext);
 begin
   inherited Create(aContext);
   fHandle := InitFreeType;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-destructor TtsFontGeneratorFreeType.Destroy;
+destructor TtsFontCreatorFreeType.Destroy;
 begin
   inherited Destroy;  // first call interited
   QuitFreeType;       // QuitFreeType will free callpacks

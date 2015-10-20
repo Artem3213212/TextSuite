@@ -43,7 +43,6 @@
         <ComponentName Value="MainForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="uMainForm"/>
       </Unit1>
     </Units>
   </ProjectOptions>
@@ -54,7 +53,7 @@
       <Filename Value="PostProcess"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="$(ProjOutDir)"/>
+      <IncludeFiles Value="$(ProjOutDir);..\..\inc"/>
       <OtherUnitFiles Value="..\utils;..\.."/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>

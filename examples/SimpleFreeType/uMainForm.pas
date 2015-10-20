@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
   uglcContext,
-  utsTextSuite, utsRendererOpenGL, utsFontCreatorFreeType, utsTypes;
+  utsTextSuite, utsUtils;
 
 type
   TMainForm = class(TForm)
@@ -18,7 +18,7 @@ type
     fContext: TglcContext;
     ftsContext: TtsContext;
     ftsRenderer: TtsRendererOpenGL;
-    ftsCreator: TtsFontGeneratorFreeType;
+    ftsCreator: TtsFontCreatorFreeType;
     ftsFont: TtsFont;
     procedure Render;
   public
@@ -47,9 +47,9 @@ begin
   fContext.BuildContext;
 
   ftsContext  := TtsContext.Create;
-  ftsRenderer := TtsRendererOpenGL.Create(ftsContext, tsFormatAlpha8);
-  ftsCreator  := TtsFontGeneratorFreeType.Create(ftsContext);
-  ftsFont     := ftsCreator.GetFontByFile(ExtractFilePath(Application.ExeName) + '../Prototype.ttf', ftsRenderer, 20, [], tsAANormal);
+  ftsRenderer := TtsRendererOpenGL.Create(ftsContext, TtsFormat.tsFormatAlpha8);
+  ftsCreator  := TtsFontCreatorFreeType.Create(ftsContext);
+  ftsFont     := ftsCreator.GetFontByFile(ExtractFilePath(Application.ExeName) + '../Prototype.ttf', 20, [], TtsAntiAliasing.tsAANormal);
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
@@ -86,9 +86,9 @@ begin
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  block := ftsRenderer.BeginBlock(10, 10, ClientWidth-20, ClientHeight-20, [tsBlockFlagWordWrap]);
+  block := ftsRenderer.BeginBlock(10, 10, ClientWidth-20, ClientHeight-20, [TtsBlockFlag.tsBlockFlagWordWrap]);
   try
-    block.HorzAlign := tsHorzAlignJustify;
+    block.HorzAlign := TtsHorzAlignment.tsHorzAlignJustify;
     block.ChangeFont(ftsFont);
     block.ChangeColor(tsColor4f(1.0, 1.0, 1.0, 1.0));
     block.TextOutW(TEST_TEXT);

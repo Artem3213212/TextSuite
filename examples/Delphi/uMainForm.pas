@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
   uglcContext,
-  utsTextSuite, utsRendererOpenGL, utsFontCreatorGDI, utsTypes, utsPostProcess;
+  utsTextSuite, utsTypes, utsUtils, utsConstants, utsPostProcessor;
 
 type
   TMainForm = class(TForm)
@@ -16,8 +16,9 @@ type
     fContext: TglcContext;
     ftsContext: TtsContext;
     ftsRenderer: TtsRendererOpenGL;
-    ftsCreator1: TtsFontGeneratorGDI;
-    ftsCreator2: TtsFontGeneratorGDI;
+    ftsCreator: TtsFontCreatorGDI;
+    ftsPostProcessList1: TtsPostProcessorList;
+    ftsPostProcessList2: TtsPostProcessorList;    
     ftsFont1: TtsFont;
     ftsFont2: TtsFont; 
     procedure Render;
@@ -41,7 +42,7 @@ const
 procedure TMainForm.FormCreate(Sender: TObject);
 var
   pf: TglcContextPixelFormatSettings;
-  pp: TtsPostProcessStep;
+  pp: TtsPostProcessor;
   img: TtsImage;
 
 const
@@ -59,42 +60,50 @@ begin
   ftsContext  := TtsContext.Create;
   ftsRenderer := TtsRendererOpenGL.Create(ftsContext, tsFormatRGBA8);
 
-  ftsCreator1 := TtsFontGeneratorGDI.Create(ftsContext);
-  ftsFont1    := ftsCreator1.GetFontByFile(ExtractFilePath(Application.ExeName) + '../Prototype.ttf', ftsRenderer, 40, [], tsAANormal);
+  // Post processors
+  ftsPostProcessList1 := TtsPostProcessorList.Create(ftsContext, true);
+  ftsPostProcessList2 := TtsPostProcessorList.Create(ftsContext, true);
 
-  pp := TtsPostProcessFillColor.Create(tsColor4f(0, 0, 0, 1), TS_MODES_REPLACE_ALL, TS_CHANNELS_RGB);
-  pp.AddUsageChars(tsUsageExclude, 'Lorem');
-  ftsCreator1.AddPostProcessStep(pp);
+  pp := TtsPostProcessorFillColor.Create(ftsContext, tsColor4f(0, 0, 0, 1), TS_IMAGE_MODES_REPLACE_ALL, TS_COLOR_CHANNELS_RGB);
+  pp.AddChars(tsUsageExclude, 'Lorem');
+  ftsPostProcessList1.Add(pp);
 
-  pp := TtsPostProcessFillColor.Create(tsColor4f(1.0, 0.0, 0.0, 1.0), TS_MODES_MODULATE_ALL, TS_CHANNELS_RGB);
-  pp.AddUsageChars(tsUsageInclude, 'Lorem');
-  ftsCreator1.AddPostProcessStep(pp);
+  pp := TtsPostProcessorFillColor.Create(ftsContext, tsColor4f(1.0, 0.0, 0.0, 1.0), TS_IMAGE_MODES_MODULATE_ALL, TS_COLOR_CHANNELS_RGB);
+  pp.AddChars(tsUsageInclude, 'Lorem');
+  ftsPostProcessList1.Add(pp);
 
   img := TtsImage.Create;
   img.CreateEmpty(tsFormatAlpha8, 4, 4);
   Move(PATTER_DATA[0], img.Data^, 16);
-  pp := TtsPostProcessFillPattern.Create(img, true, 0, 0, TS_MODES_MODULATE_ALL, TS_CHANNELS_RGBA);
-  pp.AddUsageChars(tsUsageInclude, 'Lorem');
-  ftsCreator1.AddPostProcessStep(pp);
+  pp := TtsPostProcessorFillPattern.Create(ftsContext, img, true, tsPosition(0, 0), TS_IMAGE_MODES_MODULATE_ALL, TS_COLOR_CHANNELS_RGBA);
+  pp.AddChars(tsUsageInclude, 'Lorem');
+  ftsPostProcessList2.Add(pp);
 
-  ftsCreator2 := TtsFontGeneratorGDI.Create(ftsContext);
-  ftsFont2    := ftsCreator2.GetFontByFile(ExtractFilePath(Application.ExeName) + '../Prototype.ttf', ftsRenderer, 40, [tsStyleStrikeout], tsAANormal);
+  pp := TtsPostProcessorFillColor.Create(ftsContext, tsColor4f(0, 0, 0.5, 1), TS_IMAGE_MODES_REPLACE_ALL, TS_COLOR_CHANNELS_RGB);
+  pp.AddChars(tsUsageExclude, 'e');
+  ftsPostProcessList2.Add(pp);
 
-  pp := TtsPostProcessFillColor.Create(tsColor4f(0, 0, 0.5, 1), TS_MODES_REPLACE_ALL, TS_CHANNELS_RGB);
-  pp.AddUsageChars(tsUsageExclude, 'e');
-  ftsCreator2.AddPostProcessStep(pp);
+  pp := TtsPostProcessorBorder.Create(ftsContext, 3.0, 0.5, tsColor4f(0.0, 0.5, 0.0, 1.0), true);
+  pp.AddChars(tsUsageInclude, 'e');
+  ftsPostProcessList2.Add(pp);
 
-  pp := TtsPostProcessBorder.Create(3.0, 0.5, tsColor4f(0.0, 0.5, 0.0, 1.0), true);
-  pp.AddUsageChars(tsUsageInclude, 'e');
-  ftsCreator2.AddPostProcessStep(pp);
+  // font creator and fonts
+  ftsCreator := TtsFontCreatorGDI.Create(ftsContext);
+
+  ftsFont1 := ftsCreator.GetFontByFile(ExtractFilePath(Application.ExeName) + '../Prototype.ttf', 40, [], tsAANormal);
+  ftsFont1.PostProcessor := ftsPostProcessList1;
+  
+  ftsFont2 := ftsCreator.GetFontByFile(ExtractFilePath(Application.ExeName) + '../Prototype.ttf', 40, [tsStyleStrikeout], tsAANormal);
+  ftsFont2.PostProcessor := ftsPostProcessList2;
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
   FreeAndNil(ftsFont2);
-  FreeAndNil(ftsCreator2);
-  FreeAndNil(ftsFont1);
-  FreeAndNil(ftsCreator1);
+  FreeAndNil(ftsFont1);  
+  FreeAndNil(ftsCreator);
+  FreeAndNil(ftsPostProcessList2);
+  FreeAndNil(ftsPostProcessList1);  
   FreeAndNil(ftsRenderer);
   FreeAndNil(ftsContext);
   FreeAndNil(fContext);

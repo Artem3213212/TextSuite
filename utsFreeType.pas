@@ -1,13 +1,14 @@
 unit utsFreeType;
 
 {$IFDEF FPC}
-{$mode delphi}{$H+}
+  {$mode delphi}{$H+}
 {$ENDIF}
 
 interface
 
 uses
-  Classes, SysUtils, syncobjs, dynlibs, utsTextSuite;
+  Classes, SysUtils, syncobjs, {$IFDEF FPC}dynlibs,{$ELSE}windows,{$ENDIF}
+  utsUtils;
 
 type
   // Simple Types
@@ -598,6 +599,16 @@ procedure QuitFreeType;
 
 implementation
 
+{$IFNDEF FPC}
+type
+  TLibHandle = HMODULE;
+
+  function GetLastOSError: Cardinal;
+  begin
+    result := GetLastError;
+  end;
+{$ENDIF}
+
 {$IFDEF WINDOWS}
   {$IFDEF WIN32}
     {$DEFINE TS_FT_WIN32}
@@ -631,7 +642,7 @@ function InitFreeType: FT_Library;
 
   function GetProcAddr(const aName: String): Pointer;
   begin
-    result := GetProcAddress(FreeTypeLibHandle, aName);
+    result := GetProcAddress(FreeTypeLibHandle, PAnsiChar(aName));
     if not Assigned(result) then
       raise EtsException.Create('unable to load procedure from library: ' + aName);
   end;

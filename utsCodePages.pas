@@ -1,17 +1,13 @@
 unit utsCodePages;
 
 {$IFDEF FPC}
-{$mode delphi}{$H+}
+  {$mode objfpc}{$H+}
 {$ENDIF}
 
 interface
 
 uses
-  Classes, SysUtils, utsTypes;
-
-type
-  PtsCodePageValues = ^TtsCodePageValues;
-  TtsCodePageValues = array [AnsiChar] of word;
+  utsTypes;
 
 const
   CP_8859_2 : TtsCodePageValues = (
@@ -891,55 +887,6 @@ const
     $0110, $00D1, $0309, $00D3, $00D4, $01A0, $00D6, $00D7, $00D8, $00D9, $00DA, $00DB, $00DC, $01AF, $0303, $00DF,
     $00E0, $00E1, $00E2, $0103, $00E4, $00E5, $00E6, $00E7, $00E8, $00E9, $00EA, $00EB, $0301, $00ED, $00EE, $00EF,
     $0111, $00F1, $0323, $00F3, $00F4, $01A1, $00F6, $00F7, $00F8, $00F9, $00FA, $00FB, $00FC, $01B0, $20AB, $00FF
-  );
-
-const
-  ANSI_TO_WIDE_CODE_PAGE_LUT: array[TtsCodePage] of PtsCodePageValues = (
-    nil,          //tsUTF8
-    nil,          //tsISO_8859_1
-    @CP_8859_2,   //tsISO_8859_2
-    @CP_8859_3,   //tsISO_8859_3
-    @CP_8859_4,   //tsISO_8859_4
-    @CP_8859_5,   //tsISO_8859_5
-    @CP_8859_6,   //tsISO_8859_6
-    @CP_8859_7,   //tsISO_8859_7
-    @CP_8859_8,   //tsISO_8859_8
-    @CP_8859_9,   //tsISO_8859_9
-    @CP_8859_10,  //tsISO_8859_10
-    @CP_8859_11,  //tsISO_8859_11
-    @CP_8859_13,  //tsISO_8859_13
-    @CP_8859_14,  //tsISO_8859_14
-    @CP_8859_15,  //tsISO_8859_15
-    @CP_8859_16,  //tsISO_8859_16
-    @CP_037,      //tsISO_037
-    @CP_437,      //tsISO_437
-    @CP_500,      //tsISO_500
-    @CP_737,      //tsISO_737
-    @CP_775,      //tsISO_775
-    @CP_850,      //tsISO_850
-    @CP_852,      //tsISO_852
-    @CP_855,      //tsISO_855
-    @CP_857,      //tsISO_857
-    @CP_860,      //tsISO_860
-    @CP_861,      //tsISO_861
-    @CP_862,      //tsISO_862
-    @CP_863,      //tsISO_863
-    @CP_864,      //tsISO_864
-    @CP_865,      //tsISO_865
-    @CP_866,      //tsISO_866
-    @CP_869,      //tsISO_869
-    @CP_874,      //tsISO_874
-    @CP_875,      //tsISO_875
-    @CP_1026,     //tsISO_1026
-    @CP_1250,     //tsISO_1250
-    @CP_1251,     //tsISO_1251
-    @CP_1252,     //tsISO_1252
-    @CP_1253,     //tsISO_1253
-    @CP_1254,     //tsISO_1254
-    @CP_1255,     //tsISO_1255
-    @CP_1256,     //tsISO_1256
-    @CP_1257,     //tsISO_1257
-    @CP_1258      //tsISO_1258
   );
 
 implementation

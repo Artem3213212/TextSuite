@@ -1,39 +1,42 @@
 unit utsRendererOpenGL;
 
 {$IFDEF FPC}
-{$mode delphi}{$H+}
+  {$mode objfpc}{$H+}
 {$ENDIF}
 
 interface
 
 uses
-  Classes, SysUtils,
-  utsTextSuite, utsTypes, utsOpenGLUtils, dglOpenGL;
+  Classes, SysUtils, dglOpenGL,
+  utsOpenGLUtils, utsTypes, utsContext, utsImage;
 
 type
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   TtsRendererOpenGL = class(TtsBaseOpenGL)
   private
     fVBO: GLuint;
     fIsRendering: Boolean;
   protected
-    function  CreateNewTexture: PtsFontTexture; override;
+    function CreateNewTexture: PtsFontTexture; override;
     procedure FreeTexture(var aTexture: PtsFontTexture); override;
-    procedure UploadTexData(const aCharRef: TtsCharRenderRefOpenGL;
-      const aCharImage: TtsImage; const X, Y: Integer); override;
+    procedure UploadTexData(const aCharRef: TtsOpenGLRenderRef; const aCharImage: TtsImage; const X, Y: Integer); override;
 
     procedure BeginRender; override;
     procedure EndRender; override;
 
-    procedure SetDrawPos(const X, Y: Integer); override;
-    procedure MoveDrawPos(const X, Y: Integer); override;
-    procedure SetColor(const aColor: TtsColor4f); override;
-    procedure Render(const aCharRef: TtsCharRenderRef; const aForcedWidth: Integer); override;
+    procedure SetDrawPos(const aValue: TtsPosition); override;
+    procedure MoveDrawPos(const aOffset: TtsPosition); override;
+    procedure SetColor(const aValue: TtsColor4f); override;
+    procedure Render(const aRenderRef: TtsRenderRef; const aForcedWidth: Integer = 0); override;
   public
     constructor Create(const aContext: TtsContext; const aFormat: TtsFormat);
     destructor Destroy; override;
   end;
 
 implementation
+
+uses
+  utsUtils;
 
 type
   TVertex = packed record
@@ -119,7 +122,8 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsRendererOpenGL.UploadTexData(const aCharRef: TtsCharRenderRefOpenGL; const aCharImage: TtsImage; const X, Y: Integer);
+procedure TtsRendererOpenGL.UploadTexData(const aCharRef: TtsOpenGLRenderRef; const aCharImage: TtsImage; const X,
+  Y: Integer);
 begin
   glBindTexture(GL_TEXTURE_2D, aCharRef.TextureID);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
@@ -156,40 +160,39 @@ begin
     glPopMatrix;
     fIsRendering := false;
   end;
-  inherited EndRender;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsRendererOpenGL.SetDrawPos(const X, Y: Integer);
+procedure TtsRendererOpenGL.SetDrawPos(const aValue: TtsPosition);
 begin
-  inherited SetDrawPos(X, Y);
+  inherited SetDrawPos(aValue);
   glPopMatrix;
   glPushMatrix;
-  glTranslatef(X, Y, 0);
+  glTranslatef(aValue.x, aValue.y, 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsRendererOpenGL.MoveDrawPos(const X, Y: Integer);
+procedure TtsRendererOpenGL.MoveDrawPos(const aOffset: TtsPosition);
 begin
-  inherited MoveDrawPos(X, Y);
-  glTranslatef(X, Y, 0);
+  inherited MoveDrawPos(aOffset);
+  glTranslatef(aOffset.x, aOffset.y, 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsRendererOpenGL.SetColor(const aColor: TtsColor4f);
+procedure TtsRendererOpenGL.SetColor(const aValue: TtsColor4f);
 begin
-  inherited SetColor(aColor);
+  inherited SetColor(aValue);
   glColor4fv(@Color.arr[0]);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsRendererOpenGL.Render(const aCharRef: TtsCharRenderRef; const aForcedWidth: Integer);
+procedure TtsRendererOpenGL.Render(const aRenderRef: TtsRenderRef; const aForcedWidth: Integer);
 var
-  ref: TtsCharRenderRefOpenGL;
+  ref: TtsOpenGLRenderRef;
   m: TtsMatrix4f;
 begin
-  if Assigned(aCharRef) and (aCharRef is TtsCharRenderRefOpenGL) then begin
-    ref := (aCharRef as TtsCharRenderRefOpenGL);
+  if Assigned(aRenderRef) then begin
+    ref := TtsOpenGLRenderRef(aRenderRef);
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, ref.TextureID);
@@ -228,6 +231,7 @@ begin
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 end;
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 destructor TtsRendererOpenGL.Destroy;
 begin
   glDeleteBuffers(1, @fVBO);

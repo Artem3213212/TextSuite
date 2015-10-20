@@ -225,7 +225,7 @@ procedure QuitGDI;
 implementation
 
 uses
-  utsTextSuite;
+  utsUtils;
 
 const
   LIB_GDI32    = 'gdi32.dll';

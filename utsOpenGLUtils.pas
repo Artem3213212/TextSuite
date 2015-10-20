@@ -1,25 +1,27 @@
 unit utsOpenGLUtils;
 
 {$IFDEF FPC}
-{$mode delphi}{$H+}
+  {$mode objfpc}{$H+}
 {$ENDIF}
 
 interface
 
 uses
   Classes, SysUtils,
-  utsTextSuite, utsTypes;
+  utsTypes, utsRenderer, utsImage, utsContext, utsUtils, utsChar;
 
 type
-  TtsCharRenderRefOpenGL = class(TtsCharRenderRef)
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  TtsOpenGLRenderRef = class(TObject)
   public
-    TextureID: Integer;         // ID of OpenGL texture where the char is stored in
+    TextureID: Integer;
     Size: TtsPosition;
     TexMat: TtsMatrix4f;
     VertMat: TtsMatrix4f;
     constructor Create;
   end;
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   PtsTextureUsageItem = ^TtsTextureUsageItem;
   TtsTextureUsageItem = packed record
     children: array[0..3] of PtsTextureUsageItem;
@@ -29,9 +31,10 @@ type
   TtsTextureTreeItem = packed record
     value: SmallInt;
     children: array[0..1] of PtsTextureTreeItem;
-    ref: TtsCharRenderRefOpenGL;
+    ref: TtsOpenGLRenderRef;
   end;
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   PtsFontTexture = ^TtsFontTexture;
   TtsFontTexture = packed record
     ID: Integer;                    // OpenGL texture ID
@@ -42,6 +45,7 @@ type
     Count: Integer;                 // number of chars stored in this texture
   end;
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   TtsBaseOpenGL = class(TtsRenderer)
   private
     fTextureSize: Integer;
@@ -61,17 +65,16 @@ type
     function  CreateNewTexture: PtsFontTexture; virtual;
     procedure FreeTexture(var aTexture: PtsFontTexture); virtual;
 
-    procedure UploadTexData(const aCharRef: TtsCharRenderRefOpenGL; const aCharImage: TtsImage; const X, Y: Integer); virtual;
+    procedure UploadTexData(const aCharRef: TtsOpenGLRenderRef; const aCharImage: TtsImage; const X, Y: Integer); virtual;
+  public
+    function CreateRenderRef(const aChar: TtsChar; const aImage: TtsImage): TtsRenderRef; override;
+    procedure FreeRenderRef(const aRenderRef: TtsRenderRef); override;
   protected
-    function  CreateRenderRef(const aChar: TtsChar; const aCharImage: TtsImage): TtsCharRenderRef; override;
-    procedure FreeRenderRef(const aCharRef: TtsCharRenderRef); override;
-
     procedure BeginRender; override;
-
-    procedure SetDrawPos(const X, Y: Integer); override;
-    function  GetDrawPos: TtsPosition; override;
-    procedure MoveDrawPos(const X, Y: Integer); override;
-    procedure SetColor(const aColor: TtsColor4f); override;
+    procedure SetDrawPos(const aValue: TtsPosition); override;
+    function GetDrawPos: TtsPosition; override;
+    procedure MoveDrawPos(const aOffset: TtsPosition); override;
+    procedure SetColor(const aValue: TtsColor4f); override;
   public
     property TextureSize: Integer read fTextureSize write fTextureSize;
 
@@ -84,9 +87,9 @@ type
 implementation
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//TtsCharRenderRefOpenGL////////////////////////////////////////////////////////////////////////////////////////////////
+//TtsOpenGLRenderRef////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-constructor TtsCharRenderRefOpenGL.Create;
+constructor TtsOpenGLRenderRef.Create;
 begin
   inherited Create;
   TextureID := 0;
@@ -149,13 +152,14 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsBaseOpenGL.UploadTexData(const aCharRef: TtsCharRenderRefOpenGL; const aCharImage: TtsImage; const X, Y: Integer);
+procedure TtsBaseOpenGL.UploadTexData(const aCharRef: TtsOpenGLRenderRef; const aCharImage: TtsImage; const X,
+  Y: Integer);
 begin
   // DUMMY
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-function TtsBaseOpenGL.CreateRenderRef(const aChar: TtsChar; const aCharImage: TtsImage): TtsCharRenderRef;
+function TtsBaseOpenGL.CreateRenderRef(const aChar: TtsChar; const aImage: TtsImage): TtsRenderRef;
 var
   GlyphWidth, GlyphHeight: Integer;
 
@@ -199,7 +203,7 @@ var
     end;
   end;
 
-  function AddToTexture(const aTexture: PtsFontTexture): TtsCharRenderRefOpenGL;
+  function AddToTexture(const aTexture: PtsFontTexture): TtsOpenGLRenderRef;
   var
     x, y, wChar, hChar, l, t: Integer;
     item: PtsTextureTreeItem;
@@ -208,15 +212,15 @@ var
     if not Assigned(item) then
       raise EtsRendererOpenGL.Create('unable to add glyph to texture');
 
-    item^.ref := TtsCharRenderRefOpenGL.Create;
+    item^.ref := TtsOpenGLRenderRef.Create;
     result    := item^.ref;
 
-    wChar := aChar.GlyphRect.Right  - aChar.GlyphRect.Left;
-    hChar := aChar.GlyphRect.Bottom - aChar.GlyphRect.Top;
-    l     := aChar.GlyphRect.Left + x;
-    t     := aChar.GlyphRect.Top  + y;
+    wChar := aChar.GlyphMetric.GlyphRect.Right  - aChar.GlyphMetric.GlyphRect.Left;
+    hChar := aChar.GlyphMetric.GlyphRect.Bottom - aChar.GlyphMetric.GlyphRect.Top;
+    l     := aChar.GlyphMetric.GlyphRect.Left + x;
+    t     := aChar.GlyphMetric.GlyphRect.Top  + y;
     result.TextureID := aTexture^.ID;
-    result.Size      := tsPosition(aCharImage.Width, aCharImage.Height);
+    result.Size      := tsPosition(aImage.Width, aImage.Height);
     result.TexMat := tsMatrix4f(
       tsVector4f(wChar  / aTexture^.Size,       0.0, 0.0, 0.0),
       tsVector4f(0.0,        hChar / aTexture^.Size, 0.0, 0.0),
@@ -226,20 +230,20 @@ var
       tsVector4f(wChar, 0.0, 0.0, 0.0),
       tsVector4f(0.0, hChar, 0.0, 0.0),
       tsVector4f(0.0, 0.0, 1.0, 0.0),
-      tsVector4f(aChar.GlyphOrigin.x, -aChar.GlyphOrigin.y, 0.0, 1.0));
+      tsVector4f(aChar.GlyphMetric.GlyphOrigin.x, -aChar.GlyphMetric.GlyphOrigin.y, 0.0, 1.0));
 
-    UploadTexData(result, aCharImage, x, y);
+    UploadTexData(result, aImage, x, y);
   end;
 
 var
   tex: PtsFontTexture;
 begin
   result := nil;
-  if aCharImage.IsEmpty then
+  if aImage.IsEmpty then
     exit;
 
-  GlyphWidth  := aCharImage.Width  + 1;
-  GlyphHeight := aCharImage.Height + 1;
+  GlyphWidth  := aImage.Width  + 1;
+  GlyphHeight := aImage.Height + 1;
 
   // try to add to existing texture
   tex := fFirstTexture;
@@ -250,7 +254,7 @@ begin
 
   // create new texture
   if not Assigned(result) then begin
-    if (aCharImage.Width > TextureSize) or (aCharImage.Height > TextureSize) then
+    if (aImage.Width > TextureSize) or (aImage.Height > TextureSize) then
       raise EtsRendererOpenGL.Create('char is to large to fit into a texture: (0x' + IntToHex(Ord(aChar.CharCode), 4) + ')');
     tex    := CreateNewTexture;
     result := AddToTexture(tex);
@@ -261,9 +265,9 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsBaseOpenGL.FreeRenderRef(const aCharRef: TtsCharRenderRef);
+procedure TtsBaseOpenGL.FreeRenderRef(const aRenderRef: TtsRenderRef);
 var
-  ref: TtsCharRenderRefOpenGL;
+  ref: TtsOpenGLRenderRef;
   tex: PtsFontTexture;
 
   function IsEmtpy(const aItem: PtsTextureTreeItem): Boolean;
@@ -310,10 +314,11 @@ var
   end;
 
 begin
+  ref := nil;
   try
-    if not Assigned(aCharRef) or not (aCharRef is TtsCharRenderRefOpenGL) then
+    if not Assigned(aRenderRef) then
       exit;
-    ref := (aCharRef as TtsCharRenderRefOpenGL);
+    ref := TtsOpenGLRenderRef(aRenderRef);
     tex := fFirstTexture;
     while Assigned(tex) do begin
       if (tex^.ID = ref.TextureID) then begin
@@ -329,24 +334,22 @@ begin
         tex := tex^.Next;
     end;
   finally
-    if Assigned(aCharRef) then
-      aCharRef.Free;
+    if Assigned(ref) then
+      ref.Free;
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 procedure TtsBaseOpenGL.BeginRender;
 begin
-  inherited BeginRender;
   fRenderPos.x := 0;
   fRenderPos.y := 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsBaseOpenGL.SetDrawPos(const X, Y: Integer);
+procedure TtsBaseOpenGL.SetDrawPos(const aValue: TtsPosition);
 begin
-  fRenderPos.x := X;
-  fRenderPos.y := Y;
+  fRenderPos := aValue;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -356,16 +359,16 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsBaseOpenGL.MoveDrawPos(const X, Y: Integer);
+procedure TtsBaseOpenGL.MoveDrawPos(const aOffset: TtsPosition);
 begin
-  fRenderPos.x := fRenderPos.x + X;
-  fRenderPos.y := fRenderPos.y + Y;
+  fRenderPos.x := fRenderPos.x + aOffset.x;
+  fRenderPos.y := fRenderPos.y + aOffset.y;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsBaseOpenGL.SetColor(const aColor: TtsColor4f);
+procedure TtsBaseOpenGL.SetColor(const aValue: TtsColor4f);
 begin
-  fColor := aColor;
+  fColor := aValue;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -379,6 +382,7 @@ begin
   fRenderPos    := tsPosition(0, 0);
 end;
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 destructor TtsBaseOpenGL.Destroy;
 begin
   FreeTextures(fFirstTexture);

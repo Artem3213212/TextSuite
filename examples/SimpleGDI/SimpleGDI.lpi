@@ -32,7 +32,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="2">
+    <Units Count="21">
       <Unit0>
         <Filename Value="SimpleGDI.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -43,7 +43,103 @@
         <ComponentName Value="MainForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
+        <UnitName Value="uMainForm"/>
       </Unit1>
+      <Unit2>
+        <Filename Value="..\..\utsContext.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsContext"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="..\..\utsTextSuite.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsTextSuite"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="..\..\utsUtils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsUtils"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="..\..\utsTypes.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsTypes"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="..\..\utsRenderer.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsRenderer"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="..\..\utsTextBlock.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsTextBlock"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="..\..\utsFont.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsFont"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="..\..\utsFontCreator.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsFontCreator"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="..\..\utsChar.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsChar"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="..\..\utsImage.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsImage"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="..\..\utsConstants.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsConstants"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="..\..\utsPostProcessor.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsPostProcessor"/>
+      </Unit13>
+      <Unit14>
+        <Filename Value="..\..\utsCodePages.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsCodePages"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="..\..\utsCharCache.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsCharCache"/>
+      </Unit15>
+      <Unit16>
+        <Filename Value="..\..\utsOpenGLUtils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsOpenGLUtils"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="..\..\utsRendererOpenGL.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsRendererOpenGL"/>
+      </Unit17>
+      <Unit18>
+        <Filename Value="..\..\utsRendererOpenGLES.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsRendererOpenGLES"/>
+      </Unit18>
+      <Unit19>
+        <Filename Value="..\..\utsFontCreatorFreeType.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsFontCreatorFreeType"/>
+      </Unit19>
+      <Unit20>
+        <Filename Value="..\..\utsFontCreatorGDI.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="utsFontCreatorGDI"/>
+      </Unit20>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -53,7 +149,7 @@
       <Filename Value="SimpleGDI"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="$(ProjOutDir)"/>
+      <IncludeFiles Value="$(ProjOutDir);..\..\inc"/>
       <OtherUnitFiles Value="..\utils;..\.."/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
@@ -64,6 +160,11 @@
         </Win32>
       </Options>
     </Linking>
+    <Other>
+      <CompilerMessages>
+        <IgnoredMessages idx5024="True"/>
+      </CompilerMessages>
+    </Other>
   </CompilerOptions>
   <Debugging>
     <Exceptions Count="3">
