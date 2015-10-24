@@ -52,11 +52,14 @@ type
     fItems: TObjectList;
 
     function GetCount: Integer;
+    function GetItem(const aIndex: Integer): TtsPostProcessor;
     function GetOwnsObjects: Boolean;
     procedure SetOwnsObjects(const aValue: Boolean);
   public
     property Count:       Integer read GetCount;
     property OwnsObjects: Boolean read GetOwnsObjects write SetOwnsObjects;
+
+    property Items[const aIndex: Integer]: TtsPostProcessor read GetItem;
 
     procedure Add(const aPostProcessor: TtsPostProcessor);
     procedure Delete(const aIndex: Integer);
@@ -280,6 +283,12 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function TtsPostProcessorList.GetItem(const aIndex: Integer): TtsPostProcessor;
+begin
+  result := TtsPostProcessor(fItems[aIndex]);
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function TtsPostProcessorList.GetOwnsObjects: Boolean;
 begin
   result := fItems.OwnsObjects;
@@ -480,7 +489,7 @@ begin
       aImage.Width  + 2 * fKernel.SizeX,
       aImage.Height + 2 * fKernel.SizeY,
       fKernel.SizeX, fKernel.SizeY);
-  orig := TtsImage.Create;
+  orig := TtsImage.Create(fContext);
   try
     orig.Assign(aImage);
     aImage.FillColor(fColor, TS_COLOR_CHANNELS_RGBA, TS_IMAGE_MODES_REPLACE_ALL);
@@ -554,7 +563,7 @@ begin
   result := inherited Execute(aChar, aImage);
   if not result or not Assigned(aImage) then
     exit;
-  orig := TtsImage.Create;
+  orig := TtsImage.Create(fContext);
   try
     orig.Assign(aImage);
     aImage.Resize(

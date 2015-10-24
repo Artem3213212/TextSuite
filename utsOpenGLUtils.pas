@@ -71,6 +71,7 @@ type
     procedure FreeRenderRef(const aRenderRef: TtsRenderRef); override;
   protected
     procedure BeginRender; override;
+    procedure EndRender; override;
     procedure SetDrawPos(const aValue: TtsPosition); override;
     function GetDrawPos: TtsPosition; override;
     procedure MoveDrawPos(const aOffset: TtsPosition); override;
@@ -344,6 +345,12 @@ procedure TtsBaseOpenGL.BeginRender;
 begin
   fRenderPos.x := 0;
   fRenderPos.y := 0;
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+procedure TtsBaseOpenGL.EndRender;
+begin
+  // DUMMY
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

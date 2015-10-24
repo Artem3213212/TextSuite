@@ -8,13 +8,13 @@ interface
 
 uses
   Classes, SysUtils,
-  utsUtils, utsFontCreator, utsTypes, utsPostProcessor, utsImage;
+  utsUtils, utsTypes, utsPostProcessor, utsImage;
 
 type
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   TtsFont = class(TtsMultiMasterRefManager)
   private
-    fCreator: TtsFontCreator;
+    fNames: TtsFontNames;
     fMetric: TtsFontMetric;
     fPostProcessor: TtsPostProcessor;
 
@@ -22,9 +22,9 @@ type
     fCharSpacing: Integer;
     fLineSpacing: Single;
   protected
-    {%H-}constructor Create(const aCreator: TtsFontCreator; const aMetric: TtsFontMetric);
+    {%H-}constructor Create(const aMaster: TtsRefManager; const aMetric: TtsFontMetric; const aNames: TtsFontNames);
   public
-    property Creator:       TtsFontCreator   read fCreator;
+    property Names:         TtsFontNames     read fNames;
     property Metric:        TtsFontMetric    read fMetric;
     property PostProcessor: TtsPostProcessor read fPostProcessor write fPostProcessor;
 
@@ -42,11 +42,11 @@ implementation
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //TtsFont//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-constructor TtsFont.Create(const aCreator: TtsFontCreator; const aMetric: TtsFontMetric);
+constructor TtsFont.Create(const aMaster: TtsRefManager; const aMetric: TtsFontMetric; const aNames: TtsFontNames);
 begin
-  inherited Create(aCreator);
-  fCreator := aCreator;
-  fMetric  := aMetric;
+  inherited Create(aMaster);
+  fMetric := aMetric;
+  fNames  := aNames;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -13,16 +13,19 @@ uses
   {$IFDEF TS_ENABLE_OPENGLES_SUPPORT} utsRendererOpenGLES,{$ENDIF}
   {$IFDEF TS_ENABLE_GDI_SUPPORT}      utsFontCreatorGDI,{$ENDIF}
   {$IFDEF TS_ENABLE_FREETYPE_SUPPORT} utsFontCreatorFreeType,{$ENDIF}
-  utsContext, utsFont, utsTypes, utsTextBlock, utsChar, utsImage, utsPostProcessor;
+  utsContext, utsFont, utsTypes, utsTextBlock, utsImage,
+  utsPostProcessor, utsRenderer, utsFontCreator;
 
 type
   // TextSuite Classes
   TtsContext                  = utsContext.TtsContext;
+  TtsRenderer                 = utsRenderer.TtsRenderer;
+  TtsFontCreator              = utsFontCreator.TtsFontCreator;
   TtsFont                     = utsFont.TtsFont;
   TtsTextBlock                = utsTextBlock.TtsTextBlock;
-  TtsChar                     = utsChar.TtsChar;
   TtsImage                    = utsImage.TtsImage;
-  TtsImageFunc                = utsImage.TtsImageFunc;
+  TtsImageLoadFunc            = utsImage.TtsImageLoadFunc;
+  TtsImageBlendFunc           = utsImage.TtsImageBlendFunc;
 
   // Post Processor
   TtsCharRangeUsage           = utsPostProcessor.TtsCharRangeUsage;
@@ -51,6 +54,7 @@ type
   TtsBlockFlag                = utsTypes.TtsBlockFlag;
   TtsBlockFlags               = utsTypes.TtsBlockFlags;
   TtsFontStyle                = utsTypes.TtsFontStyle;
+  TtsFontStyles               = utsTypes.TtsFontStyles;
   TtsColorChannel             = utsTypes.TtsColorChannel;
   TtsColorChannels            = utsTypes.TtsColorChannels;
   TtsImageMode                = utsTypes.TtsImageMode;

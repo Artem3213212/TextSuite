@@ -8,14 +8,17 @@ interface
 
 uses
   Classes, SysUtils,
-  utsTypes, utsUtils;
+  utsTypes, utsUtils, utsContext;
 
 type
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   TtsImage = class;
-  TtsImageFunc = procedure(const aImage: TtsImage; X, Y: Integer; var aPixel: TtsColor4f; aArgs: Pointer);
-  TtsImage = class(TObject)
+  TtsImageLoadFunc  = procedure(const aImage: TtsImage; X, Y: Integer; var aPixel: TtsColor4f; aArgs: Pointer);
+  TtsImageBlendFunc = function (const aSrc, aDst: TtsColor4f; aArgs: Pointer): TtsColor4f;
+  TtsImage = class(TtsRefManager)
   private
+    fContext: TtsContext;
+
     fWidth: Integer;
     fHeight: Integer;
     fDataSize: Integer;
@@ -37,20 +40,21 @@ type
       const aLineSize: Integer = 0;
       const aDataSize: Integer = 0);
   public
-    property IsEmpty:  Boolean   read GetIsEmpty;
-    property Width:    Integer   read fWidth;
-    property Height:   Integer   read fHeight;
-    property LineSize: Integer   read fLineSize;
-    property DataSize: Integer   read fDataSize;
-    property Format:   TtsFormat read fFormat;
-    property Data:     Pointer   read fData;
+    property Context:  TtsContext read fContext;
+    property IsEmpty:  Boolean    read GetIsEmpty;
+    property Width:    Integer    read fWidth;
+    property Height:   Integer    read fHeight;
+    property LineSize: Integer    read fLineSize;
+    property DataSize: Integer    read fDataSize;
+    property Format:   TtsFormat  read fFormat;
+    property Data:     Pointer    read fData;
     property Scanline[const aIndex: Integer]: Pointer read GetScanline;
 
     function GetPixelAt(const x, y: Integer; out aColor: TtsColor4f): Boolean;
 
     procedure Assign(const aImage: TtsImage);
     procedure CreateEmpty(const aFormat: TtsFormat; const aWidth, aHeight: Integer);
-    procedure LoadFromFunc(const aFunc: TtsImageFunc; const aArgs: Pointer);
+    procedure LoadFromFunc(const aFunc: TtsImageLoadFunc; const aArgs: Pointer);
 
     procedure Resize(const aNewWidth, aNewHeight, X, Y: Integer);
     procedure FindMinMax(out aRect: TtsRect);
@@ -58,9 +62,10 @@ type
     procedure FillColor(const aColor: TtsColor4f; const aChannelMask: TtsColorChannels; const aModes: TtsImageModes);
     procedure FillPattern(const aPattern: TtsImage; X, Y: Integer; const aChannelMask: TtsColorChannels; const aModes: TtsImageModes);
     procedure Blend(const aImage: TtsImage; const X, Y: Integer; const aFunc: TtsBlendColorFunc);
+    procedure Blend(const aImage: TtsImage; const X, Y: Integer; const aFunc: TtsImageBlendFunc; const aArgs: Pointer);
     procedure Blur(const aHorzKernel, aVertKernel: TtsKernel1D; const aChannelMask: TtsColorChannels);
 
-    constructor Create;
+    constructor Create(const aContext: TtsContext);
     destructor Destroy; override;
   end;
 
@@ -69,6 +74,20 @@ implementation
 uses
   Math,
   utsConstants;
+
+type
+  PBlendProxyArgs = ^TBlendProxyArgs;
+  TBlendProxyArgs = packed record
+    callback: TtsBlendColorFunc;
+  end;
+
+function tsImageBlendCallbackProxy(const aSrc, aDst: TtsColor4f; aArgs: Pointer): TtsColor4f;
+var
+  p: PBlendProxyArgs;
+begin
+  p := PBlendProxyArgs(aArgs);
+  result := p^.callback(aSrc, aDst);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //TtsImage//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -169,7 +188,7 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsImage.LoadFromFunc(const aFunc: TtsImageFunc; const aArgs: Pointer);
+procedure TtsImage.LoadFromFunc(const aFunc: TtsImageLoadFunc; const aArgs: Pointer);
 var
   X, Y: Integer;
   c: TtsColor4f;
@@ -336,6 +355,15 @@ end;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 procedure TtsImage.Blend(const aImage: TtsImage; const X, Y: Integer; const aFunc: TtsBlendColorFunc);
 var
+  args: TBlendProxyArgs;
+begin
+  args.callback := aFunc;
+  Blend(aImage, X, Y, @tsImageBlendCallbackProxy, @args);
+end;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+procedure TtsImage.Blend(const aImage: TtsImage; const X, Y: Integer; const aFunc: TtsImageBlendFunc; const aArgs: Pointer);
+var
   _x, _y, x1, x2, y1, y2: Integer;
   src, dst, tmp: PByte;
   srcColor, dstColor: TtsColor4f;
@@ -356,7 +384,7 @@ begin
     for _x := x1 to x2-1 do begin
       tsFormatUnmap(aImage.Format, src, srcColor);
       tsFormatUnmap(       Format, dst, dstColor);
-      tsFormatMap(aImage.Format, tmp, aFunc(srcColor, dstColor));
+      tsFormatMap(aImage.Format, tmp, aFunc(srcColor, dstColor, aArgs));
     end;
   end;
 end;
@@ -406,7 +434,7 @@ var
   end;
 
 begin
-  tmpImage := TtsImage.Create;
+  tmpImage := TtsImage.Create(fContext);
   try
     tmpImage.CreateEmpty(Format, Width, Height);
     tmpImage.FillColor(tsColor4f(1, 1, 1, 0), TS_COLOR_CHANNELS_RGBA, TS_IMAGE_MODES_REPLACE_ALL);
@@ -419,9 +447,10 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-constructor TtsImage.Create;
+constructor TtsImage.Create(const aContext: TtsContext);
 begin
-  inherited Create;
+  inherited Create(aContext);
+  fContext := aContext;
   SetData(nil);
 end;
 

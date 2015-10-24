@@ -161,13 +161,15 @@ type
     LineSpacing: Integer;
   end;
 
-  TtsFontMetric = packed record
+  TtsFontNames = packed record
     Fontname: String;
     Copyright: String;
-    FaceName: String;
-    StyleName: String;
-    FullName: String;
+    Facename: String;
+    Stylename: String;
+    Fullname: String;
+  end;
 
+  TtsFontMetric = packed record
     Size: Integer;
     Style: TtsFontStyles;
     AntiAliasing: TtsAntiAliasing;

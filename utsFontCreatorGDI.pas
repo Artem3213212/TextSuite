@@ -21,7 +21,7 @@ type
     procedure GetCharImageAANone(const aDC: HDC; const aCharCode: WideChar; const aImage: TtsImage; const aFormat: TtsFormat);
     procedure GetCharImageAANormal(const aDC: HDC; const aCharCode: WideChar; const aImage: TtsImage; const aFormat: TtsFormat);
   protected
-    {%H-}constructor Create(const aHandle: THandle; const aCreator: TtsFontCreator; const aMetric: TtsFontMetric);
+    {%H-}constructor Create(const aHandle: THandle; const aCreator: TtsFontCreator; const aMetric: TtsFontMetric; const aNames: TtsFontNames);
   public
     procedure GetCharImage(const aCharCode: WideChar; const aCharImage: TtsImage; const aFormat: TtsFormat); override;
     function GetGlyphMetrics(const aCharCode: WideChar; out aGlyphOrigin, aGlyphSize: TtsPosition; out aAdvance: Integer): Boolean; override;
@@ -64,7 +64,8 @@ type
   private
     fRegistration: TtsFontRegistration;
   protected
-    {%H-}constructor Create(const aRegistration: TtsFontRegistration; const aHandle: THandle; const aCreator: TtsFontCreator; const aMetric: TtsFontMetric);
+    {%H-}constructor Create(const aRegistration: TtsFontRegistration; const aHandle: THandle;
+      const aCreator: TtsFontCreator; const aMetric: TtsFontMetric; const aNames: TtsFontNames);
   public
     destructor Destroy; override;
   end;
@@ -72,11 +73,11 @@ type
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   TtsFontCreatorGDI = class(TtsFontCreator)
   private
-    function CreateFont(const aFontname: String; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing; out aMetric: TtsFontMetric): THandle;
+    function CreateFont(const aFontname: String; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing; out aMetric: TtsFontMetric; out aNames: TtsFontNames): THandle;
   public
-    function GetFontByName(const aFontname: String; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload;
-    function GetFontByFile(const aFilename: String; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload;
-    function GetFontByStream(const aStream: TStream; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload;
+    function GetFontByName(const aFontname: String; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload; override;
+    function GetFontByFile(const aFilename: String; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload; override;
+    function GetFontByStream(const aStream: TStream; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload; override;
 
     constructor Create(const aContext: TtsContext);
     destructor Destroy; override;
@@ -569,9 +570,9 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-constructor TtsFontGDI.Create(const aHandle: THandle; const aCreator: TtsFontCreator; const aMetric: TtsFontMetric);
+constructor TtsFontGDI.Create(const aHandle: THandle; const aCreator: TtsFontCreator; const aMetric: TtsFontMetric; const aNames: TtsFontNames);
 begin
-  inherited Create(aCreator, aMetric);
+  inherited Create(aCreator, aMetric, aNames);
   FillChar(fMat2, SizeOf(fMat2), #0);
   fMat2.eM11.value := 1;
   fMat2.eM22.value := 1;
@@ -737,9 +738,10 @@ end;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //TtsRegistredFontGDI///////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-constructor TtsRegistredFontGDI.Create(const aRegistration: TtsFontRegistration; const aHandle: THandle; const aCreator: TtsFontCreator; const aMetric: TtsFontMetric);
+constructor TtsRegistredFontGDI.Create(const aRegistration: TtsFontRegistration; const aHandle: THandle;
+  const aCreator: TtsFontCreator; const aMetric: TtsFontMetric; const aNames: TtsFontNames);
 begin
-  inherited Create(aHandle, aCreator, aMetric);
+  inherited Create(aHandle, aCreator, aMetric, aNames);
   fRegistration := aRegistration;
 end;
 
@@ -753,7 +755,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //TtsFontCreatorGDI/////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-function TtsFontCreatorGDI.CreateFont(const aFontname: String; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing; out aMetric: TtsFontMetric): THandle;
+function TtsFontCreatorGDI.CreateFont(const aFontname: String; const aSize: Integer; const aStyle: TtsFontStyles;
+  const aAntiAliasing: TtsAntiAliasing; out aMetric: TtsFontMetric; out aNames: TtsFontNames): THandle;
 var
   LogFont: TLogFontA;
   i: Integer;
@@ -777,7 +780,7 @@ begin
   aMetric.Size         := aSize;
   aMetric.Style        := aStyle;
   aMetric.AntiAliasing := aAntiAliasing;
-  aMetric.Fontname     := aFontname;
+  aNames.Fontname      := aFontname;
 
   // prepare font attribs
   FillChar(LogFont{%H-}, SizeOf(LogFont), #0);
@@ -804,10 +807,10 @@ begin
           SetLength(Lang, 4);
           GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_ILANGUAGE, @Lang[1], 4);
 
-          GetTTString(Buffer, BufSize, NAME_ID_COPYRIGHT,  StrToInt('$' + String(Lang)), aMetric.Copyright);
-          GetTTString(Buffer, BufSize, NAME_ID_FACE_NAME,  StrToInt('$' + String(Lang)), aMetric.FaceName);
-          GetTTString(Buffer, BufSize, NAME_ID_STYLE_NAME, StrToInt('$' + String(Lang)), aMetric.StyleName);
-          GetTTString(Buffer, BufSize, NAME_ID_FULL_NAME,  StrToInt('$' + String(Lang)), aMetric.FullName);
+          GetTTString(Buffer, BufSize, NAME_ID_COPYRIGHT,  StrToInt('$' + String(Lang)), aNames.Copyright);
+          GetTTString(Buffer, BufSize, NAME_ID_FACE_NAME,  StrToInt('$' + String(Lang)), aNames.FaceName);
+          GetTTString(Buffer, BufSize, NAME_ID_STYLE_NAME, StrToInt('$' + String(Lang)), aNames.StyleName);
+          GetTTString(Buffer, BufSize, NAME_ID_FULL_NAME,  StrToInt('$' + String(Lang)), aNames.FullName);
         end;
       finally
         FreeMem(Buffer);
@@ -841,11 +844,12 @@ function TtsFontCreatorGDI.GetFontByName(const aFontname: String; const aSize: I
 var
   handle: THandle;
   metric: TtsFontMetric;
+  names: TtsFontNames;
 begin
-  handle := CreateFont(aFontname, aSize, aStyle, aAntiAliasing, metric);
+  handle := CreateFont(aFontname, aSize, aStyle, aAntiAliasing, metric, names);
   if (handle = 0) then
     raise EtsException.Create('unable to create font from name: ' + aFontname);
-  result := TtsFontGDI.Create(handle, self, metric);
+  result := TtsFontGDI.Create(handle, self, metric, names);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -854,19 +858,20 @@ var
   reg: TtsFontRegistrationFile;
   handle: THandle;
   metric: TtsFontMetric;
+  names: TtsFontNames;
 begin
   reg := TtsFontRegistrationFile.Create(aFilename);
   try
     if not reg.IsRegistered then
       raise EtsException.Create('unable to register font file: ' + aFilename);
-    handle := CreateFont(reg.Fontname, aSize, aStyle, aAntiAliasing, metric);
+    handle := CreateFont(reg.Fontname, aSize, aStyle, aAntiAliasing, metric, names);
     if (handle = 0) then
       raise EtsException.Create('unable to create font from file: ' + aFilename);
   except
     FreeAndNil(reg);
     raise;
   end;
-  result := TtsRegistredFontGDI.Create(reg, handle, self, metric);
+  result := TtsRegistredFontGDI.Create(reg, handle, self, metric, names);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -875,14 +880,15 @@ var
   reg: TtsFontRegistrationStream;
   handle: THandle;
   metric: TtsFontMetric;
+  names: TtsFontNames;
 begin
   reg := TtsFontRegistrationStream.Create(aStream);
   if not reg.IsRegistered then
     raise EtsException.Create('unable to register font from stream');
-  handle := CreateFont(reg.Fontname, aSize, aStyle, aAntiAliasing, metric);
+  handle := CreateFont(reg.Fontname, aSize, aStyle, aAntiAliasing, metric, names);
   if (handle = 0) then
     raise EtsException.Create('unable to create font from stream: ' + reg.Fontname);
-  result := TtsRegistredFontGDI.Create(reg, handle, self, metric);
+  result := TtsRegistredFontGDI.Create(reg, handle, self, metric, names);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

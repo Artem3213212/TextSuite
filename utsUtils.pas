@@ -138,6 +138,8 @@ begin
   inherited Create;
   fMasterRef := aMaster;
   fSlaveRefs := TObjectList.Create(false);
+  if Assigned(fMasterRef) then
+    fMasterRef.AddSlave(self);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

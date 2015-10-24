@@ -206,7 +206,7 @@ begin
            (m.Advance <> 0))) then
         exit;
 
-  CharImage := TtsImage.Create;
+  CharImage := TtsImage.Create(nil);
   try
     if (aCharCode = #0) then begin
       CharImage.CreateEmpty(fRenderRefGenerator.Format, 3, 1);

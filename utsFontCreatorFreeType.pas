@@ -25,7 +25,8 @@ type
   private
     fHandle: TtsFreeTypeFaceHandle;
   protected
-    {%H-}constructor Create(const aHandle: TtsFreeTypeFaceHandle; const aCreator: TtsFontCreator; const aMetric: TtsFontMetric);
+    {%H-}constructor Create(const aHandle: TtsFreeTypeFaceHandle; const aCreator: TtsFontCreator;
+      const aMetric: TtsFontMetric; const aNames: TtsFontNames);
   public
     procedure GetCharImage(const aCharCode: WideChar; const aCharImage: TtsImage; const aFormat: TtsFormat); override;
     function GetGlyphMetrics(const aCharCode: WideChar; out aGlyphOrigin, aGlyphSize: TtsPosition; out aAdvance: Integer): Boolean; override;
@@ -38,11 +39,11 @@ type
   private
     fHandle: FT_Library;
 
-    procedure LoadNames(const aFace: FT_Face; var aMetric: TtsFontMetric);
+    procedure LoadNames(const aFace: FT_Face; var aMetric: TtsFontMetric; var aNames: TtsFontNames);
     function CreateFont(const aFace: FT_Face; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont;
   public
-    function GetFontByFile(const aFilename: String; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload;
-    function GetFontByStream(const aStream: TStream; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload;
+    function GetFontByFile(const aFilename: String; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload; override;
+    function GetFontByStream(const aStream: TStream; const aSize: Integer; const aStyle: TtsFontStyles; const aAntiAliasing: TtsAntiAliasing): TtsFont; overload; override;
 
     constructor Create(const aContext: TtsContext);
     destructor Destroy; override;
@@ -77,9 +78,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //TtsFontFreeType///////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-constructor TtsFontFreeType.Create(const aHandle: TtsFreeTypeFaceHandle; const aCreator: TtsFontCreator; const aMetric: TtsFontMetric);
+constructor TtsFontFreeType.Create(const aHandle: TtsFreeTypeFaceHandle; const aCreator: TtsFontCreator; const aMetric: TtsFontMetric; const aNames: TtsFontNames);
 begin
-  inherited Create(aCreator, aMetric);
+  inherited Create(aCreator, aMetric, aNames);
   fHandle := aHandle;
 end;
 
@@ -218,9 +219,9 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//TtsFontCreatorFreeType//////////////////////////////////////////////////////////////////////////////////////////////
+//TtsFontCreatorFreeType////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsFontCreatorFreeType.LoadNames(const aFace: FT_Face; var aMetric: TtsFontMetric);
+procedure TtsFontCreatorFreeType.LoadNames(const aFace: FT_Face; var aMetric: TtsFontMetric; var aNames: TtsFontNames);
 var
   i, cnt: FT_Int;
   err: FT_Error;
@@ -275,16 +276,16 @@ begin
 
     case name.name_id of
       TT_NAME_ID_COPYRIGHT:
-        if (aMetric.Copyright = '') then
-          aMetric.Copyright := Decode;
+        if (aNames.Copyright = '') then
+          aNames.Copyright := Decode;
 
       TT_NAME_ID_FONT_FAMILY:
-        if (aMetric.Fontname = '') then
-          aMetric.Fontname := Decode;
+        if (aNames.Fontname = '') then
+          aNames.Fontname := Decode;
 
       TT_NAME_ID_FULL_NAME:
-        if (aMetric.FullName = '') then
-          aMetric.FullName := Decode;
+        if (aNames.FullName = '') then
+          aNames.FullName := Decode;
     end;
   end;
 end;
@@ -295,6 +296,7 @@ function TtsFontCreatorFreeType.CreateFont(const aFace: FT_Face; const aSize: In
 var
   err: FT_Error;
   metric: TtsFontMetric;
+  names: TtsFontNames;
   os2: PTT_OS2;
   hz: PTT_HoriHeader;
 begin
@@ -304,9 +306,9 @@ begin
 
   FillChar(metric{%H-}, SizeOf(metric), #0);
   metric.AntiAliasing := tsAANormal;
-  metric.FaceName     := String(aFace^.family_name);
-  metric.StyleName    := String(aFace^.style_name);
-  LoadNames(aFace, metric);
+  names.FaceName      := String(aFace^.family_name);
+  names.StyleName     := String(aFace^.style_name);
+  LoadNames(aFace, metric, names);
 
   metric.Size         := aSize;
   metric.AntiAliasing := aAntiAliasing;
@@ -336,7 +338,7 @@ begin
     metric.ExternalLeading := hz^.Line_Gap div FT_SIZE_FACTOR;
   end;
 
-  result := TtsFontFreeType.Create(TtsFreeTypeFaceHandle.Create(aFace), self, metric);
+  result := TtsFontFreeType.Create(TtsFreeTypeFaceHandle.Create(aFace), self, metric, names);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
