@@ -13,7 +13,7 @@ uses
   {$IFDEF TS_ENABLE_OPENGLES_SUPPORT} utsRendererOpenGLES,{$ENDIF}
   {$IFDEF TS_ENABLE_GDI_SUPPORT}      utsFontCreatorGDI,{$ENDIF}
   {$IFDEF TS_ENABLE_FREETYPE_SUPPORT} utsFontCreatorFreeType,{$ENDIF}
-  utsContext, utsFont, utsTypes, utsTextBlock, utsImage,
+  utsContext, utsFont, utsTypes, utsTextBlock, utsImage, utsChar,
   utsPostProcessor, utsRenderer, utsFontCreator;
 
 type
@@ -26,6 +26,7 @@ type
   TtsImage                    = utsImage.TtsImage;
   TtsImageLoadFunc            = utsImage.TtsImageLoadFunc;
   TtsImageBlendFunc           = utsImage.TtsImageBlendFunc;
+  TtsChar                     = utsChar.TtsChar;
 
   // Post Processor
   TtsCharRangeUsage           = utsPostProcessor.TtsCharRangeUsage;
