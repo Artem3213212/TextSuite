@@ -190,6 +190,7 @@ var
 begin
   for i := fMasterRefs.Count-1 downto 0 do
     DelMaster(fMasterRefs[i] as TtsRefManager);
+  FreeAndNil(fMasterRefs);
   inherited Destroy;
 end;
 
