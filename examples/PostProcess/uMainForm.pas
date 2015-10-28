@@ -74,7 +74,7 @@ begin
   pp.AddChars(TtsCharRangeUsage.tsUsageInclude, 'Lorem');
   ftsPostProcessor1.Add(pp);
 
-  img := TtsImage.Create;
+  img := TtsImage.Create(ftsContext);
   img.CreateEmpty(TtsFormat.tsFormatAlpha8, 4, 4);
   Move(PATTER_DATA[0], img.Data^, 16);
   pp := TtsPostProcessorFillPattern.Create(ftsContext, img, true, tsPosition(0, 0), TS_IMAGE_MODES_MODULATE_ALL, TS_COLOR_CHANNELS_RGBA);
