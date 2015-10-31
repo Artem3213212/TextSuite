@@ -174,6 +174,7 @@ type
     Style: TtsFontStyles;
     AntiAliasing: TtsAntiAliasing;
     DefaultChar: WideChar;
+    __reserved: SmallInt;
 
     Ascent: Integer;
     Descent: Integer;
