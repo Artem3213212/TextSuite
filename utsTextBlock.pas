@@ -744,9 +744,9 @@ var
     // check vertical clipping
     case Clipping of
       tsClipCharBorder, tsClipWordBorder:
-        draw := (y + line^.meta.Height > r.Top) and (y < r.Bottom);
+        draw := (y + line^.meta.Height >= r.Top) and (y <= r.Bottom);
       tsClipCharComplete, tsClipWordComplete:
-        draw := (y > r.Top) and (y + line^.meta.Height < r.Bottom);
+        draw := (y >= r.Top) and (y + line^.meta.Height <= r.Bottom);
     else
       draw := true;
     end;
