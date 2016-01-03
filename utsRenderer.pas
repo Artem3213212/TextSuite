@@ -17,7 +17,7 @@ type
     function GetTextWidthA(const aFont: TtsFont; const aText: PAnsiChar): Integer;
     function GetTextWidthW(const aFont: TtsFont; const aText: PWideChar): Integer;
 
-    function BeginBlock(const aTop, aLeft, aWidth, aHeight: Integer; const aFlags: TtsBlockFlags): TtsTextBlock;
+    function BeginBlock(const aLeft, aTop, aWidth, aHeight: Integer; const aFlags: TtsBlockFlags): TtsTextBlock;
   public
     class procedure EndBlock(var aBlock: TtsTextBlock);
     class procedure AbortBlock(var aBlock: TtsTextBlock);
@@ -49,9 +49,9 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-function TtsRenderer.BeginBlock(const aTop, aLeft, aWidth, aHeight: Integer; const aFlags: TtsBlockFlags): TtsTextBlock;
+function TtsRenderer.BeginBlock(const aLeft, aTop, aWidth, aHeight: Integer; const aFlags: TtsBlockFlags): TtsTextBlock;
 begin
-  result := TtsTextBlock.Create(self, aTop, aLeft, aWidth, aHeight, aFlags);
+  result := TtsTextBlock.Create(self, aLeft, aTop, aWidth, aHeight, aFlags);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

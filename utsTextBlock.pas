@@ -154,7 +154,7 @@ type
 
     procedure Render;
 
-    constructor Create(const aRenderer: TtsBlockRenderer; const aTop, aLeft, aWidth, aHeight: Integer; const aFlags: TtsBlockFlags);
+    constructor Create(const aRenderer: TtsBlockRenderer; const aLeft, aTop, aWidth, aHeight: Integer; const aFlags: TtsBlockFlags);
     destructor Destroy; override;
   end;
 
@@ -802,7 +802,7 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-constructor TtsTextBlock.Create(const aRenderer: TtsBlockRenderer; const aTop, aLeft, aWidth, aHeight: Integer; const aFlags: TtsBlockFlags);
+constructor TtsTextBlock.Create(const aRenderer: TtsBlockRenderer; const aLeft, aTop, aWidth, aHeight: Integer; const aFlags: TtsBlockFlags);
 begin
   inherited Create(aRenderer);
   fRenderer := aRenderer;
