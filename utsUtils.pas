@@ -14,11 +14,11 @@ type
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   TtsRefManager = class(TObject)
   private
-    fMasterRef: TtsRefManager;
-    fSlaveRefs: TObjectList;
+    fMasterRef: TtsRefManager;  // master of this object (master will destroy this object)
+    fSlaveRefs: TObjectList;    // slaves of this object (will destroy all slaves when this objects is destroyed)
   protected
     procedure AddSlave(const aSlave: TtsRefManager); virtual;
-    procedure DelSlave(const aSlave: TtsRefManager); virtual;
+    function DelSlave(const aSlave: TtsRefManager): Boolean; virtual;
   public
     constructor Create(const aMaster: TtsRefManager);
     destructor Destroy; override;
@@ -126,10 +126,11 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsRefManager.DelSlave(const aSlave: TtsRefManager);
+function TtsRefManager.DelSlave(const aSlave: TtsRefManager): Boolean;
 begin
+  result := false;
   if Assigned(fSlaveRefs) then
-    fSlaveRefs.Remove(aSlave);
+    result := (fSlaveRefs.Remove(aSlave) >= 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

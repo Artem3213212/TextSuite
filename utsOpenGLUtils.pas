@@ -149,6 +149,10 @@ begin
   if Assigned(aTexture^.Next) then
     aTexture^.Next^.Prev := aTexture^.Prev;
   Dispose(aTexture);
+  if (fFirstTexture = aTexture) then begin
+    fFirstTexture := nil;
+    fLastTexture  := nil;
+  end;
   aTexture := nil;
 end;
 
@@ -325,18 +329,14 @@ begin
       if (tex^.ID = ref.TextureID) then begin
         if not RemoveFromTree(tex^.Usage, 0, 0, tex^.Size, tex^.Size) then
           raise EtsRendererOpenGL.Create('unable to remove render ref from texture');
-        if IsEmtpy(tex^.Usage) then begin
-          if (tex = fFirstTexture) then
-            fFirstTexture := nil;
+        if IsEmtpy(tex^.Usage) then
           FreeTexture(tex);
-        end;
         tex := nil;
       end else
         tex := tex^.Next;
     end;
   finally
-    if Assigned(ref) then
-      ref.Free;
+    FreeAndNil(ref);
   end;
 end;
 

@@ -22,7 +22,7 @@ type
     fCharSpacing: Integer;
     fLineSpacing: Single;
   protected
-    {%H-}constructor Create(const aMaster: TtsRefManager; const aMetric: TtsFontMetric; const aNames: TtsFontNames);
+    {%H-}constructor Create(const aCreator: TtsRefManager; const aMetric: TtsFontMetric; const aNames: TtsFontNames);
   public
     property Names:         TtsFontNames     read fNames;
     property Metric:        TtsFontMetric    read fMetric;
@@ -42,9 +42,9 @@ implementation
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //TtsFont//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-constructor TtsFont.Create(const aMaster: TtsRefManager; const aMetric: TtsFontMetric; const aNames: TtsFontNames);
+constructor TtsFont.Create(const aCreator: TtsRefManager; const aMetric: TtsFontMetric; const aNames: TtsFontNames);
 begin
-  inherited Create(aMaster);
+  inherited Create(aCreator);
   fMetric := aMetric;
   fNames  := aNames;
 end;

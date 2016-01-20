@@ -73,7 +73,7 @@ type
     function GetChars(const aKey: TtsFont): TtsChars;
     function Find(const aMin, aMax: Integer; const aKey: TtsFont; out aIndex: Integer): Integer;
   protected
-    procedure DelSlave(const aSlave: TtsRefManager); override;
+    function DelSlave(const aSlave: TtsRefManager): Boolean; override;
   public
     property Chars[const aKey: TtsFont]: TtsChars read GetChars;
 
@@ -459,19 +459,22 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-procedure TtsCharCache.DelSlave(const aSlave: TtsRefManager);
+function TtsCharCache.DelSlave(const aSlave: TtsRefManager): Boolean;
 var
+  f: TtsFont;
   pos, index: Integer;
   p: PtsCharCacheItem;
 begin
-  pos := Find(0, fItems.Count-1, aSlave as TtsFont, index);
+  f := (aSlave as TtsFont);
+  f.DelMaster(self);
+  pos := Find(0, fItems.Count-1, f, index);
   if (pos >= 0) then begin
     p := PtsCharCacheItem(fItems[pos]);
     fItems.Delete(pos);
     FreeAndNil(p^.val);
     Dispose(p);
   end;
-  inherited DelSlave(aSlave);
+  result := inherited DelSlave(aSlave);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -482,10 +485,8 @@ var
 begin
   for i := 0 to fItems.Count-1 do begin
     p := PtsCharCacheItem(fItems[i]);
-    FreeAndNil(p^.val);
-    Dispose(p);
+    p^.key.DelMaster(self);
   end;
-  fItems.Clear;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
