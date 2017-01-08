@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Package Version="4">
+    <PathDelim Value="\"/>
+    <Name Value="TextSuite"/>
+    <Type Value="RunAndDesignTime"/>
+    <CompilerOptions>
+      <Version Value="11"/>
+      <PathDelim Value="\"/>
+      <SearchPaths>
+        <IncludeFiles Value="inc"/>
+        <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)\"/>
+      </SearchPaths>
+    </CompilerOptions>
+    <Files Count="22">
+      <Item1>
+        <Filename Value="utsChar.pas"/>
+        <UnitName Value="utsChar"/>
+      </Item1>
+      <Item2>
+        <Filename Value="utsCharCache.pas"/>
+        <UnitName Value="utsCharCache"/>
+      </Item2>
+      <Item3>
+        <Filename Value="utsCodePages.pas"/>
+        <UnitName Value="utsCodePages"/>
+      </Item3>
+      <Item4>
+        <Filename Value="utsConstants.pas"/>
+        <UnitName Value="utsConstants"/>
+      </Item4>
+      <Item5>
+        <Filename Value="utsContext.pas"/>
+        <UnitName Value="utsContext"/>
+      </Item5>
+      <Item6>
+        <Filename Value="utsFont.pas"/>
+        <UnitName Value="utsFont"/>
+      </Item6>
+      <Item7>
+        <Filename Value="utsFontCreator.pas"/>
+        <UnitName Value="utsFontCreator"/>
+      </Item7>
+      <Item8>
+        <Filename Value="utsFontCreatorFreeType.pas"/>
+        <UnitName Value="utsFontCreatorFreeType"/>
+      </Item8>
+      <Item9>
+        <Filename Value="utsFontCreatorGDI.pas"/>
+        <UnitName Value="utsFontCreatorGDI"/>
+      </Item9>
+      <Item10>
+        <Filename Value="utsFreeType.pas"/>
+        <UnitName Value="utsFreeType"/>
+      </Item10>
+      <Item11>
+        <Filename Value="utsGDI.pas"/>
+        <UnitName Value="utsGDI"/>
+      </Item11>
+      <Item12>
+        <Filename Value="utsImage.pas"/>
+        <UnitName Value="utsImage"/>
+      </Item12>
+      <Item13>
+        <Filename Value="utsOpenGLUtils.pas"/>
+        <UnitName Value="utsOpenGLUtils"/>
+      </Item13>
+      <Item14>
+        <Filename Value="utsPostProcessor.pas"/>
+        <UnitName Value="utsPostProcessor"/>
+      </Item14>
+      <Item15>
+        <Filename Value="utsRenderer.pas"/>
+        <UnitName Value="utsRenderer"/>
+      </Item15>
+      <Item16>
+        <Filename Value="utsRendererOpenGL.pas"/>
+        <UnitName Value="utsRendererOpenGL"/>
+      </Item16>
+      <Item17>
+        <Filename Value="utsRendererOpenGLES.pas"/>
+        <UnitName Value="utsRendererOpenGLES"/>
+      </Item17>
+      <Item18>
+        <Filename Value="utsTextBlock.pas"/>
+        <UnitName Value="utsTextBlock"/>
+      </Item18>
+      <Item19>
+        <Filename Value="utsTextSuite.pas"/>
+        <UnitName Value="utsTextSuite"/>
+      </Item19>
+      <Item20>
+        <Filename Value="utsTypes.pas"/>
+        <UnitName Value="utsTypes"/>
+      </Item20>
+      <Item21>
+        <Filename Value="utsUtils.pas"/>
+        <UnitName Value="utsUtils"/>
+      </Item21>
+      <Item22>
+        <Filename Value="inc\utsTextSuite.inc"/>
+        <Type Value="Include"/>
+      </Item22>
+    </Files>
+    <RequiredPkgs Count="2">
+      <Item1>
+        <PackageName Value="bitSpaceOpenGL"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="FCL"/>
+      </Item2>
+    </RequiredPkgs>
+    <UsageOptions>
+      <UnitPath Value="$(PkgOutDir)"/>
+    </UsageOptions>
+    <PublishOptions>
+      <Version Value="2"/>
+    </PublishOptions>
+  </Package>
+</CONFIG>
