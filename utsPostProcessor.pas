@@ -177,6 +177,7 @@ type
 implementation
 
 uses
+  Math,
   utsConstants;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -557,7 +558,7 @@ end;
 function TtsPostProcessorShadow.Execute(const aChar: TtsChar; const aImage: TtsImage): Boolean;
 var
   orig: TtsImage;
-  tmpX, tmpY: Integer;
+  tmpX, tmpY, w, h: Integer;
   m: TtsGlyphMetric;
 begin
   result := inherited Execute(aChar, aImage);
@@ -567,19 +568,20 @@ begin
   try
     orig.Assign(aImage);
     aImage.Resize(
-      aImage.Width  + 2 * fKernel.Size,
-      aImage.Height + 2 * fKernel.Size,
-      fKernel.Size, fKernel.Size);
+      aImage.Width  + 2 * fKernel.Size + abs(fOffset.x),
+      aImage.Height + 2 * fKernel.Size + abs(fOffset.y),
+      fKernel.Size + max(0, fOffset.x),
+      fKernel.Size + max(0, fOffset.y));
     aImage.FillColor(fColor, TS_COLOR_CHANNELS_RGBA, TS_IMAGE_MODES_MODULATE_ALPHA);
     aImage.Blur(fKernel, fKernel, [tsChannelAlpha]);
 
-    tmpX := fKernel.Size - fOffset.x;
-    tmpY := fKernel.Size - fOffset.y;
+    tmpX := fKernel.Size + max(0, -fOffset.x); //fKernel.Size - fOffset.x;
+    tmpY := fKernel.Size + max(0, -fOffset.y); //fKernel.Size - fOffset.y;
     aImage.Blend(orig, tmpX, tmpY, @tsBlendColorAlpha);
 
     m := aChar.GlyphMetric;
-    m.GlyphRect.Right  := m.GlyphRect.Right + 2 * fKernel.Size;
-    m.GlyphRect.Bottom := m.GlyphRect.Bottom + 2 * fKernel.Size;
+    m.GlyphRect.Right  := m.GlyphRect.Right  + 2 * fKernel.Size + abs(fOffset.x);
+    m.GlyphRect.Bottom := m.GlyphRect.Bottom + 2 * fKernel.Size + abs(fOffset.y);
     m.GlyphOrigin.x    := m.GlyphOrigin.x - tmpX;
     m.GlyphOrigin.y    := m.GlyphOrigin.y + tmpX;
     aChar.GlyphMetric  := m;
