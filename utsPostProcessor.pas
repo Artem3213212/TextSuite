@@ -558,7 +558,7 @@ end;
 function TtsPostProcessorShadow.Execute(const aChar: TtsChar; const aImage: TtsImage): Boolean;
 var
   orig: TtsImage;
-  tmpX, tmpY, w, h: Integer;
+  tmpX, tmpY: Integer;
   m: TtsGlyphMetric;
 begin
   result := inherited Execute(aChar, aImage);

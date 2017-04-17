@@ -347,6 +347,7 @@ var
   face: FT_Face;
   err: FT_Error;
 begin
+  FillByte(face{%H-}, SizeOf(face), 0);
   err := FT_New_Face(fHandle, PAnsiChar(aFilename), 0, @face);
   if (err <> 0) then
     raise EtsException.Create('unable to create free type face from file: ' + aFilename + ' error=' + IntToStr(err));
@@ -361,6 +362,7 @@ var
   ms: TMemoryStream;
   p: PBYte;
 begin
+  FillByte(face{%H-}, SizeOf(face), 0);
   if (aStream is TMemoryStream) then begin
     ms := (aStream as TMemoryStream);
     p := ms.Memory;

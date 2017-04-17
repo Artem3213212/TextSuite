@@ -288,8 +288,15 @@ begin
     gdiInitialized := true;
   except
     gdiInitialized := false;
-    FreeLibrary(gdiLibHandle);
-    FreeLibrary(kernel32LibHandle);
+    if (gdiLibHandle <> 0) then begin
+      FreeLibrary(gdiLibHandle);
+      gdiLibHandle := 0;
+    end;
+    if (kernel32LibHandle <> 0) then begin
+      FreeLibrary(kernel32LibHandle);
+      kernel32LibHandle := 0;
+    end;
+    raise;
   end;
   finally
     gdiCritSec.Leave;

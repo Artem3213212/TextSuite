@@ -7,30 +7,30 @@ unit utsFreeType;
 interface
 
 uses
-  Classes, SysUtils, syncobjs, {$IFDEF FPC}dynlibs,{$ELSE}windows,{$ENDIF}
+  Classes, SysUtils, syncobjs, ctypes, {$IFDEF FPC}dynlibs,{$ELSE}windows,{$ENDIF}
   utsUtils;
 
 type
   // Simple Types
-  FT_Error    = Integer;
+  FT_Error    = cint;
   FT_Library  = Pointer;
-  FT_Short    = SmallInt;
-  FT_Byte     = Byte;
+  FT_Short    = csshort;
+  FT_Byte     = cuchar;
   FT_Char     = AnsiChar;
-  FT_UShort   = Word;
-  FT_Int      = Integer;
-  FT_Int32    = Integer;
-  FT_UInt     = Cardinal;
-  FT_Long     = LongInt;
-  FT_ULong    = Cardinal;
-  FT_Fixed    = LongInt;
-  FT_Pos      = LongInt;
-  FT_F26Dot6  = LongInt;
+  FT_UShort   = cushort;
+  FT_Int      = csint;
+  FT_Int32    = cint32;
+  FT_UInt     = cuint;
+  FT_Long     = cslong;
+  FT_ULong    = culong;
+  FT_Fixed    = cslong;
+  FT_Pos      = cslong;
+  FT_F26Dot6  = cslong;
   FT_String   = AnsiChar;
 
   // Enums
-  FT_Encoding     = Integer;
-  FT_Glyph_Format = Integer;
+  FT_Encoding     = csint;
+  FT_Glyph_Format = csint;
 
   // Pointer
   FT_Face       = ^FT_FaceRec;
@@ -684,6 +684,7 @@ begin
     result := ftLibrary;
   except
     FreeTypeInitialized := false;
+    raise;
   end;
   finally
     FreeTypeCritSec.Leave;
@@ -695,7 +696,7 @@ begin
   FreeTypeCritSec.Enter;
   try
     dec(FreeTypeRefCount, 1);
-    if (FreeTypeRefCount > 0) then
+    if (FreeTypeRefCount > 0) or not FreeTypeInitialized then
       exit;
 
     FT_Done_FreeType(ftLibrary);
