@@ -188,10 +188,16 @@ end;
 destructor TtsMultiMasterRefManager.Destroy;
 var
   i: Integer;
+  m: TObjectList;
 begin
-  for i := fMasterRefs.Count-1 downto 0 do
-    DelMaster(fMasterRefs[i] as TtsRefManager);
-  FreeAndNil(fMasterRefs);
+  m := fMasterRefs;
+  try
+    fMasterRefs := nil;
+    for i := m.Count-1 downto 0 do
+      (m[i] as TtsRefManager).DelSlave(self);
+  finally
+    FreeAndNil(m);
+  end;
   inherited Destroy;
 end;
 
